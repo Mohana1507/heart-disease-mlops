@@ -1,11 +1,12 @@
-"""Generate the comprehensive, publication-quality MLOps Assignment 1 Final Report.
+"""Generate the publication-quality, 15-page MLOps Assignment 1 Final Report.
 
-Structured for optimal academic density (~10-11 pages) adhering strictly to BITS Pilani
-AIMLCZG523 assignment guidelines.
+Standardized to the BITS Pilani AIMLCZG523 MLOps Assignment 01 format.
+Features comprehensive visual evidence screenshots, exact measured experimental
+metrics from MLflow, hyperparameter tuning grids, and production Kubernetes manifests.
 
 Outputs:
-  - MLOps_Report.docx (root)
-  - docs/MLOps_Report.docx
+  - docs/MLOps_Report.docx (primary)
+  - MLOps_Report_Updated.docx (root fallback)
 """
 import os
 from pathlib import Path
@@ -25,7 +26,7 @@ def set_cell_background(cell, fill_hex):
     tcPr.append(shd)
 
 
-def set_cell_margins(cell, top=80, bottom=80, left=120, right=120):
+def set_cell_margins(cell, top=70, bottom=70, left=110, right=110):
     """Set inner cell padding in twentieths of a point (dxa)."""
     tcPr = cell._tc.get_or_add_tcPr()
     tcMar = parse_xml(
@@ -59,7 +60,7 @@ def format_table_header(row, col_widths, bg_hex="1B365D"):
     """Format table header row with bold white text on dark navy background."""
     for i, cell in enumerate(row.cells):
         set_cell_background(cell, bg_hex)
-        set_cell_margins(cell, top=90, bottom=90, left=110, right=110)
+        set_cell_margins(cell, top=80, bottom=80, left=100, right=100)
         cell.width = col_widths[i]
         for p in cell.paragraphs:
             p.paragraph_format.space_before = Pt(0)
@@ -76,7 +77,7 @@ def format_table_rows(table, col_widths, alternate_bg=True):
         bg = "F7F9FB" if (r_idx % 2 == 1 and alternate_bg) else "FFFFFF"
         for c_idx, cell in enumerate(row.cells):
             set_cell_background(cell, bg)
-            set_cell_margins(cell, top=60, bottom=60, left=110, right=110)
+            set_cell_margins(cell, top=55, bottom=55, left=100, right=100)
             cell.width = col_widths[c_idx]
             for p in cell.paragraphs:
                 p.paragraph_format.space_before = Pt(0)
@@ -91,9 +92,9 @@ def add_callout_box(doc, title, content_lines, border_color="1B365D", bg_color="
     tbl = doc.add_table(rows=1, cols=1)
     tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
     cell = tbl.cell(0, 0)
-    cell.width = Inches(6.5)
+    cell.width = Inches(6.8)
     set_cell_background(cell, bg_color)
-    set_cell_margins(cell, top=90, bottom=90, left=140, right=140)
+    set_cell_margins(cell, top=80, bottom=80, left=130, right=130)
 
     tcPr = cell._tc.get_or_add_tcPr()
     borders = parse_xml(
@@ -108,7 +109,7 @@ def add_callout_box(doc, title, content_lines, border_color="1B365D", bg_color="
 
     p0 = cell.paragraphs[0]
     p0.paragraph_format.space_before = Pt(1)
-    p0.paragraph_format.space_after = Pt(3)
+    p0.paragraph_format.space_after = Pt(2)
     r0 = p0.add_run(f"■ {title}")
     r0.font.bold = True
     r0.font.size = Pt(9)
@@ -132,30 +133,23 @@ def add_heading_with_spacing(doc, text, level):
     h = doc.add_heading(text, level=level)
     h.paragraph_format.keep_with_next = True
     if level == 1:
-        h.paragraph_format.space_before = Pt(11)
-        h.paragraph_format.space_after = Pt(3)
+        h.paragraph_format.space_before = Pt(10)
+        h.paragraph_format.space_after = Pt(2)
         for r in h.runs:
             r.font.color.rgb = RGBColor(27, 54, 93)
             r.font.size = Pt(13)
             r.font.bold = True
     elif level == 2:
-        h.paragraph_format.space_before = Pt(8)
+        h.paragraph_format.space_before = Pt(7)
         h.paragraph_format.space_after = Pt(2)
         for r in h.runs:
             r.font.color.rgb = RGBColor(41, 74, 110)
-            r.font.size = Pt(11)
-            r.font.bold = True
-    elif level == 3:
-        h.paragraph_format.space_before = Pt(5)
-        h.paragraph_format.space_after = Pt(1)
-        for r in h.runs:
-            r.font.color.rgb = RGBColor(60, 60, 60)
-            r.font.size = Pt(10)
+            r.font.size = Pt(10.5)
             r.font.bold = True
     return h
 
 
-def add_p(doc, text="", bold_prefix=None, space_after=3):
+def add_p(doc, text="", bold_prefix=None, space_after=2):
     p = doc.add_paragraph()
     p.paragraph_format.space_before = Pt(0)
     p.paragraph_format.space_after = Pt(space_after)
@@ -174,7 +168,7 @@ def add_p(doc, text="", bold_prefix=None, space_after=3):
 def add_bullet_p(doc, bold_prefix, text):
     p = doc.add_paragraph(style="List Bullet")
     p.paragraph_format.space_before = Pt(0)
-    p.paragraph_format.space_after = Pt(2)
+    p.paragraph_format.space_after = Pt(1.5)
     p.paragraph_format.line_spacing = 1.12
     if bold_prefix:
         r_pre = p.add_run(bold_prefix)
@@ -186,25 +180,25 @@ def add_bullet_p(doc, bold_prefix, text):
     return p
 
 
-def add_figure_if_exists(doc, img_path_str, caption, width=Inches(5.6)):
+def add_figure_if_exists(doc, img_path_str, caption, width=Inches(6.4)):
     p = Path(img_path_str)
     if p.exists():
         p_img = doc.add_paragraph()
         p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_img.paragraph_format.space_before = Pt(4)
+        p_img.paragraph_format.space_before = Pt(3)
         p_img.paragraph_format.space_after = Pt(1)
         p_img.add_run().add_picture(str(p), width=width)
         p_cap = doc.add_paragraph()
         p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_cap.paragraph_format.space_before = Pt(0)
-        p_cap.paragraph_format.space_after = Pt(5)
+        p_cap.paragraph_format.space_after = Pt(4)
         r_cap = p_cap.add_run(caption)
         r_cap.font.size = Pt(8)
         r_cap.font.italic = True
         r_cap.font.color.rgb = RGBColor(80, 80, 80)
 
 
-def add_side_by_side_figures(doc, left_path, right_path, caption, left_w=Inches(3.1), right_w=Inches(3.1)):
+def add_side_by_side_figures(doc, left_path, right_path, caption, left_w=Inches(3.3), right_w=Inches(3.3)):
     pl = Path(left_path)
     pr = Path(right_path)
     if pl.exists() and pr.exists():
@@ -225,56 +219,7 @@ def add_side_by_side_figures(doc, left_path, right_path, caption, left_w=Inches(
         p_cap = doc.add_paragraph()
         p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_cap.paragraph_format.space_before = Pt(1)
-        p_cap.paragraph_format.space_after = Pt(5)
-        r_cap = p_cap.add_run(caption)
-        r_cap.font.size = Pt(8)
-        r_cap.font.italic = True
-        r_cap.font.color.rgb = RGBColor(80, 80, 80)
-
-
-def add_triplet_figures(doc, p1, p2, p3, caption, w1=Inches(2.05), w2=Inches(2.05), w3=Inches(2.05)):
-    paths = [Path(p1), Path(p2), Path(p3)]
-    if all(p.exists() for p in paths):
-        t = doc.add_table(rows=1, cols=3)
-        t.alignment = WD_TABLE_ALIGNMENT.CENTER
-        widths = [w1, w2, w3]
-        for idx, c in enumerate(t.rows[0].cells):
-            c.width = widths[idx]
-            set_cell_background(c, "FFFFFF")
-            set_cell_margins(c, 0, 0, 0, 0)
-            p = c.paragraphs[0]
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p.add_run().add_picture(str(paths[idx]), width=widths[idx])
-
-        p_cap = doc.add_paragraph()
-        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap.paragraph_format.space_before = Pt(1)
-        p_cap.paragraph_format.space_after = Pt(5)
-        r_cap = p_cap.add_run(caption)
-        r_cap.font.size = Pt(8)
-        r_cap.font.italic = True
-        r_cap.font.color.rgb = RGBColor(80, 80, 80)
-
-
-def add_2x2_figures(doc, r1c1, r1c2, r2c1, r2c2, caption, w1=Inches(3.1), w2=Inches(3.1)):
-    p_all = [Path(r1c1), Path(r1c2), Path(r2c1), Path(r2c2)]
-    if all(p.exists() for p in p_all):
-        t = doc.add_table(rows=2, cols=2)
-        t.alignment = WD_TABLE_ALIGNMENT.CENTER
-        for r_idx in range(2):
-            for c_idx in range(2):
-                c = t.rows[r_idx].cells[c_idx]
-                c.width = w1 if c_idx == 0 else w2
-                set_cell_background(c, "FFFFFF")
-                set_cell_margins(c, 0, 0, 0, 0)
-                p = c.paragraphs[0]
-                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                p.add_run().add_picture(str(p_all[r_idx * 2 + c_idx]), width=c.width)
-
-        p_cap = doc.add_paragraph()
-        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_cap.paragraph_format.space_before = Pt(1)
-        p_cap.paragraph_format.space_after = Pt(5)
+        p_cap.paragraph_format.space_after = Pt(4)
         r_cap = p_cap.add_run(caption)
         r_cap.font.size = Pt(8)
         r_cap.font.italic = True
@@ -288,10 +233,18 @@ def build_full_report():
     sec = doc.sections[0]
     sec.page_width = Inches(8.27)
     sec.page_height = Inches(11.69)
-    sec.top_margin = Inches(0.7)
-    sec.bottom_margin = Inches(0.7)
-    sec.left_margin = Inches(0.75)
-    sec.right_margin = Inches(0.75)
+    sec.top_margin = Inches(0.65)
+    sec.bottom_margin = Inches(0.65)
+    sec.left_margin = Inches(0.7)
+    sec.right_margin = Inches(0.7)
+
+    # Configure Header
+    header = sec.header
+    p_hdr = header.paragraphs[0]
+    p_hdr.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    r_hdr = p_hdr.add_run("Mohanapriya M · 2025AE05482 · AIMLCZG523 MLOps Assignment 01")
+    r_hdr.font.size = Pt(8.5)
+    r_hdr.font.color.rgb = RGBColor(120, 120, 120)
 
     # Base Font
     style_normal = doc.styles["Normal"]
@@ -299,460 +252,621 @@ def build_full_report():
     style_normal.font.size = Pt(9.5)
     style_normal.font.color.rgb = RGBColor(35, 35, 35)
 
-    # Title Banner
+    # =============================================================
+    # PAGE 1: TITLE, METADATA & TABLE OF CONTENTS
+    # =============================================================
+    p_univ = doc.add_paragraph()
+    p_univ.paragraph_format.space_before = Pt(0)
+    p_univ.paragraph_format.space_after = Pt(2)
+    r_univ = p_univ.add_run("MACHINE LEARNING OPERATIONS (MLOps) · AIMLCZG523")
+    r_univ.font.size = Pt(9)
+    r_univ.font.bold = True
+    r_univ.font.color.rgb = RGBColor(0, 102, 204)
+
+    p_assign = doc.add_paragraph()
+    p_assign.paragraph_format.space_before = Pt(0)
+    p_assign.paragraph_format.space_after = Pt(12)
+    r_assign = p_assign.add_run("Assignment 01 · MLOps Experimental Learning Assignment · Total Marks: 50")
+    r_assign.font.size = Pt(8.5)
+    r_assign.font.color.rgb = RGBColor(100, 100, 100)
+
     p_title = doc.add_paragraph()
     p_title.paragraph_format.space_before = Pt(0)
-    p_title.paragraph_format.space_after = Pt(1)
-    p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r_title = p_title.add_run("End-to-End MLOps Pipeline for Heart Disease Risk Prediction")
-    r_title.font.size = Pt(17)
+    p_title.paragraph_format.space_after = Pt(4)
+    r_title = p_title.add_run("Heart Disease Risk Prediction\nEnd-to-End MLOps Pipeline")
+    r_title.font.size = Pt(22)
     r_title.font.bold = True
     r_title.font.color.rgb = RGBColor(27, 54, 93)
 
     p_sub = doc.add_paragraph()
     p_sub.paragraph_format.space_before = Pt(0)
-    p_sub.paragraph_format.space_after = Pt(6)
-    p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r_sub = p_sub.add_run("Machine Learning Operations (AIMLCZG523) — Assignment 01 Technical Report")
-    r_sub.font.size = Pt(10.5)
-    r_sub.font.bold = True
+    p_sub.paragraph_format.space_after = Pt(16)
+    r_sub = p_sub.add_run("Model development, experiment tracking, CI/CD, containerization, Kubernetes deployment and monitoring")
+    r_sub.font.size = Pt(11)
     r_sub.font.color.rgb = RGBColor(70, 70, 70)
 
     # Metadata Table
-    meta_table = doc.add_table(rows=2, cols=2)
+    meta_table = doc.add_table(rows=9, cols=2)
     meta_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(meta_table, color="B0C4DE", sz="6")
-    meta_widths = [Inches(3.3), Inches(3.4)]
+    meta_widths = [Inches(1.8), Inches(5.0)]
 
-    row0 = meta_table.rows[0]
-    row0.cells[0].text = "Student Name: Mohanapriya M"
-    row0.cells[1].text = "Student ID: 2025AE05482"
-    row1 = meta_table.rows[1]
-    row1.cells[0].text = "Course: AIMLCZG523 (MLOps)"
-    row1.cells[1].text = "Repository: https://github.com/Mohana1507/heart-disease-mlops"
-
-    for row in meta_table.rows:
-        for c_idx, cell in enumerate(row.cells):
-            set_cell_background(cell, "F4F7FA")
-            set_cell_margins(cell, top=45, bottom=45, left=90, right=90)
-            cell.width = meta_widths[c_idx]
-            for p in cell.paragraphs:
-                p.paragraph_format.space_before = Pt(0)
-                p.paragraph_format.space_after = Pt(0)
-                for r in p.runs:
-                    r.font.size = Pt(8.5)
-                    r.font.bold = True
-                    r.font.color.rgb = RGBColor(27, 54, 93)
-
-    p_spacer = doc.add_paragraph()
-    p_spacer.paragraph_format.space_before = Pt(2)
-    p_spacer.paragraph_format.space_after = Pt(4)
-
-    # -------------------------------------------------------------
-    # 1. Introduction and Scope
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "1. Introduction and Scope", level=1)
-    add_p(doc,
-        "Cardiovascular diseases represent the leading cause of global mortality, responsible for an estimated "
-        "17.9 million deaths annually (World Health Organization [WHO], 2021). Automated clinical risk stratification "
-        "derived from non-invasive diagnostic indicators—such as resting blood pressure, serum cholesterol, resting "
-        "electrocardiography, and exercise treadmill measurements—enables physicians to prioritize urgent interventions. "
-        "However, transitioning predictive models from exploratory notebooks into clinical environments requires robust "
-        "Machine Learning Operations (MLOps) engineering to guarantee reproducibility, auditability, low-latency serving, "
-        "and runtime observability.")
-
-    add_p(doc,
-        "This project implements an end-to-end MLOps workflow for heart disease risk classification utilizing the canonical "
-        "UCI Cleveland Heart Disease benchmark (Janosi et al., 1989; Dua & Graff, 2019). The engineering pipeline spans: "
-        "(1) automated data ingestion and leakage-free sanitization; (2) exploratory data analysis with diagnostic visualizations; "
-        "(3) hyperparameter-tuned candidate model training evaluated via nested cross-validation (Pedregosa et al., 2011); "
-        "(4) experiment tracking and artifact lineage with MLflow (Zaharia et al., 2018); (5) production packaging into an encapsulated "
-        "scikit-learn pipeline; (6) containerized REST microservice serving via FastAPI (Tiangolo, 2024); (7) declarative Kubernetes "
-        "orchestration (Kubernetes Authors, 2024); (8) Prometheus and Grafana monitoring (Prometheus Authors, 2024); and (9) automated "
-        "continuous integration and deployment through GitHub Actions.")
-
-    add_p(doc, "Table 1 outlines the mapping between core assignment tasks and repository implementations.", bold_prefix="Implementation Mapping: ")
-
-    # Table 1: Requirement to Artifact Mapping
-    t1 = doc.add_table(rows=10, cols=3)
-    t1.alignment = WD_TABLE_ALIGNMENT.CENTER
-    set_table_borders(t1)
-    col_w1 = [Inches(1.6), Inches(2.7), Inches(2.4)]
-
-    headers1 = ["Assignment Task", "Implementation Summary", "Repository Artefacts"]
-    for i, h in enumerate(headers1):
-        t1.rows[0].cells[i].text = h
-    format_table_header(t1.rows[0], col_w1)
-
-    t1_data = [
-        ("1. Data & EDA", "Automated ingestion, target binarization, NaN preservation, class balance, correlation heatmap & histograms.", "scripts/download_data.py, src/heart/data.py, src/heart/eda.py"),
-        ("2. Modelling", "ColumnTransformer preprocessing, 3 tuned classifiers (LR, RF, GB), 5x3 nested CV protocol.", "src/heart/features.py, src/heart/modeling.py"),
-        ("3. Tracking", "MLflow run logging of hyperparameters, CV metrics, test scores, ROC/PR curves, and model signatures.", "src/heart/train.py, mlruns/"),
-        ("4. Packaging", "Self-contained scikit-learn Pipeline serialization (model.joblib) with companion metadata.json.", "models/model.joblib, models/metadata.json"),
-        ("5. CI/CD & Tests", "21 offline pytest unit tests (synthetic fixture), 4-stage GitHub Actions workflow (lint, test, train, docker).", "tests/, .github/workflows/ci.yml"),
-        ("6. Containerization", "FastAPI serving application, non-root user security hardening, container HEALTHCHECK probe.", "Dockerfile, src/heart/api.py"),
-        ("7. Deployment", "Declarative Kubernetes Deployment (2 replicas), LoadBalancer Service, Ingress, and Autoscaling (HPA).", "k8s/deployment.yaml, k8s/service.yaml, k8s/hpa.yaml"),
-        ("8. Monitoring", "Structured JSON request logging without raw PII, Prometheus telemetry (/metrics), pre-provisioned Grafana.", "src/heart/api.py, docker-compose.yml, monitoring/"),
-        ("9. Documentation", "Technical report, video walkthrough outline, execution instructions, and reproducible manifests.", "MLOps_Report.docx, README.md, docs/"),
+    meta_rows = [
+        ("Student name", "Mohanapriya M"),
+        ("Student ID", "2025AE05482"),
+        ("Course", "Machine Learning Operations (MLOps), AIMLCZG523"),
+        ("Dataset", "UCI Heart Disease (Cleveland), 303 patients, 13 features"),
+        ("Final model", "Logistic Regression (C = 0.1, penalty = l2), CV ROC-AUC 0.9018, test ROC-AUC 0.9665"),
+        ("Serving", "FastAPI in Docker, with Docker Compose and Kubernetes (Deployment, Service, HPA, Ingress)"),
+        ("Tooling", "scikit-learn, MLflow, pytest, flake8, GitHub Actions, Prometheus, Grafana"),
+        ("Repository", "https://github.com/Mohana1507/heart-disease-mlops"),
+        ("Date", "20 October 2026")
     ]
-    for r_idx, (c0, c1, c2) in enumerate(t1_data, start=1):
-        row = t1.rows[r_idx]
-        row.cells[0].text = c0
-        row.cells[1].text = c1
-        row.cells[2].text = c2
-    format_table_rows(t1, col_w1)
+    for r_idx, (k, v) in enumerate(meta_rows):
+        row = meta_table.rows[r_idx]
+        row.cells[0].text = k
+        row.cells[1].text = v
+        set_cell_background(row.cells[0], "F4F7FA")
+        set_cell_background(row.cells[1], "FFFFFF")
+        set_cell_margins(row.cells[0], top=40, bottom=40, left=80, right=80)
+        set_cell_margins(row.cells[1], top=40, bottom=40, left=80, right=80)
+        row.cells[0].width = meta_widths[0]
+        row.cells[1].width = meta_widths[1]
+        for p in row.cells[0].paragraphs:
+            for r in p.runs:
+                r.font.bold = True
+                r.font.size = Pt(8.5)
+                r.font.color.rgb = RGBColor(27, 54, 93)
+        for p in row.cells[1].paragraphs:
+            for r in p.runs:
+                r.font.size = Pt(8.5)
+                r.font.color.rgb = RGBColor(30, 30, 30)
 
     p_sp = doc.add_paragraph()
-    p_sp.paragraph_format.space_before = Pt(2)
-    p_sp.paragraph_format.space_after = Pt(2)
+    p_sp.paragraph_format.space_before = Pt(14)
+
+    add_heading_with_spacing(doc, "Contents", level=2)
+    toc_items = [
+        "1. Problem, dataset and solution overview",
+        "2. Setup and installation",
+        "3. Data acquisition and exploratory data analysis",
+        "4. Feature engineering and model development (with Hyperparameter Tuning)",
+        "5. Experiment tracking (MLflow)",
+        "6. Model packaging and reproducibility",
+        "7. CI/CD pipeline and automated testing (pytest & GitHub Actions)",
+        "8. Containerization and API (Docker & FastAPI)",
+        "9. Production deployment (Kubernetes manifests & LoadBalancer)",
+        "10. Monitoring and logging (Prometheus & Grafana)",
+        "11. Architecture, deliverables and video demonstration"
+    ]
+    for item in toc_items:
+        p_toc = doc.add_paragraph()
+        p_toc.paragraph_format.space_before = Pt(1)
+        p_toc.paragraph_format.space_after = Pt(1)
+        r = p_toc.add_run(item)
+        r.font.size = Pt(9)
+        r.font.color.rgb = RGBColor(40, 40, 40)
+
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 2: PROBLEM, DATASET AND SOLUTION OVERVIEW
+    # =============================================================
+    add_heading_with_spacing(doc, "1. Problem, dataset and solution overview", level=1)
+    add_p(doc,
+        "Predict whether a patient has coronary heart disease from routine non-invasive clinical diagnostics, "
+        "and serve that prediction through a hardened, monitored REST microservice designed for production cloud environments.",
+        bold_prefix="Problem Statement: ")
 
     add_p(doc,
-        "Figure 1 illustrates the modular system architecture, tracing the lifecycle from raw data acquisition to Kubernetes "
-        "load balancing and Prometheus/Grafana operational monitoring.", bold_prefix="Architecture Walkthrough: ")
+        "The canonical UCI Cleveland Heart Disease benchmark (Janosi et al., 1989; Dua & Graff, 2019) is the primary cohort "
+        "in clinical machine learning literature. The dataset contains 303 patient records and 13 clinical predictors alongside the "
+        "angiographic disease diagnosis 'num' (0 = absence; 1–4 = presence of coronary artery disease). Under standard clinical AI protocol, "
+        "num > 0 is binarized to target = 1.", bold_prefix="Dataset Context: ")
 
-    add_figure_if_exists(doc, "docs/architecture.png",
-        "Figure 1: End-to-end MLOps pipeline architecture — from raw data acquisition to Kubernetes serving and Grafana monitoring.",
-        width=Inches(5.5))
+    # Schema Table
+    t_schema = doc.add_table(rows=15, cols=3)
+    t_schema.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(t_schema)
+    w_sch = [Inches(1.1), Inches(4.3), Inches(1.4)]
+    for i, h in enumerate(["Feature", "Clinical Description", "Type"]):
+        t_schema.rows[0].cells[i].text = h
+    format_table_header(t_schema.rows[0], w_sch)
 
-    # -------------------------------------------------------------
-    # 2. Setup and Environment Configuration
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "2. Setup and Environment Configuration", level=1)
-    add_p(doc,
-        "To ensure deterministic execution across operating systems (Linux, macOS, Windows) and eliminate dependency drift, "
-        "project dependencies are pinned strictly and partitioned into two functional tiers:")
+    schema_data = [
+        ("age", "Patient age in years", "numeric"),
+        ("sex", "Biological sex (1 = male, 0 = female)", "binary"),
+        ("cp", "Chest pain type (1: typical angina, 2: atypical, 3: non-anginal, 4: asymptomatic)", "nominal"),
+        ("trestbps", "Resting blood pressure (mm Hg on admission)", "numeric"),
+        ("chol", "Serum cholesterol in mg/dl", "numeric"),
+        ("fbs", "Fasting blood sugar > 120 mg/dl (1 = true, 0 = false)", "binary"),
+        ("restecg", "Resting electrocardiographic findings (0: normal, 1: ST-T wave, 2: LV hypertrophy)", "nominal"),
+        ("thalach", "Maximum heart rate achieved during exercise treadmill test", "numeric"),
+        ("exang", "Exercise-induced angina (1 = yes, 0 = no)", "binary"),
+        ("oldpeak", "ST depression induced by exercise relative to rest (mm)", "numeric"),
+        ("slope", "Slope of peak exercise ST segment (1: upsloping, 2: flat, 3: downsloping)", "nominal"),
+        ("ca", "Number of major vessels (0–3) colored by fluoroscopy (4 missing codes)", "categorical (count)"),
+        ("thal", "Thallium-201 myocardial scintigraphy (3: normal, 6: fixed, 7: reversible defect)", "nominal"),
+        ("target (num)", "Angiographic coronary artery disease (0 = healthy, 1 = disease)", "binary target")
+    ]
+    for r_idx, (f, desc, tp) in enumerate(schema_data, start=1):
+        row = t_schema.rows[r_idx]
+        row.cells[0].text = f
+        row.cells[1].text = desc
+        row.cells[2].text = tp
+    format_table_rows(t_schema, w_sch)
 
-    add_bullet_p(doc, "Runtime Serving Dependencies (requirements-serve.txt): ",
-        "Minimal set required for model deserialization and inference: numpy==1.26.4, pandas==2.2.3, scikit-learn==1.5.2, "
-        "scipy==1.13.1, joblib==1.4.2, fastapi==0.115.4, uvicorn==0.32.0, pydantic==2.9.2, prometheus-client==0.21.0. Keeps the "
-        "production container compressed image size to 162 MB.")
-    add_bullet_p(doc, "Development & Training Dependencies (requirements.txt): ",
-        "Extends runtime dependencies with training and quality tooling: matplotlib==3.9.2, seaborn==0.13.2, mlflow==2.17.2, "
-        "pytest==8.3.3, pytest-cov==5.0.0, httpx==0.27.2, flake8==7.1.1, and an editable install of the package (-e .).")
+    add_p(doc, "Key operational components of the engineering lifecycle:", bold_prefix="Solution at a Glance: ")
+    add_bullet_p(doc, "Data: ", "scripts/download_data.py downloads UCI data; src/heart/data.py cleans and preserves missing values without data leakage.")
+    add_bullet_p(doc, "Modelling: ", "scikit-learn Pipeline (ColumnTransformer + Classifier) evaluated across LR, RF, and GB using 5x3 nested cross-validation.")
+    add_bullet_p(doc, "Tracking: ", "MLflow logs hyperparameter grids, cross-validation metrics, test scores, ROC/PR curves, and serialized MLmodel packages.")
+    add_bullet_p(doc, "Quality gates: ", "flake8 linting and 21 automated pytest unit tests executed locally and across a 4-stage GitHub Actions CI/CD workflow.")
+    add_bullet_p(doc, "Serving: ", "FastAPI /predict microservice packaged in a 162 MB non-root container image, orchestrated via Docker Compose and Kubernetes.")
+    add_bullet_p(doc, "Observability: ", "Privacy-conscious JSON access logs (no patient PII), Prometheus telemetry (/metrics), and pre-provisioned Grafana dashboard.")
 
-    add_callout_box(doc, "Quickstart Setup Commands", [
-        "git clone https://github.com/Mohana1507/heart-disease-mlops.git && cd heart-disease-mlops",
-        "python -m venv .venv && source .venv/bin/activate  # Windows: .venv\\Scripts\\activate",
-        "pip install -r requirements.txt && python scripts/download_data.py",
-        "python -m heart.eda && python -m heart.train && pytest -v"
+    add_p(doc, "Table 2 summarizes the unbiased hold-out test set performance across 61 test patients.", bold_prefix="Headline Results (Held-Out Test Set, N = 61): ")
+
+    # Headline Results Table
+    t_head = doc.add_table(rows=4, cols=6)
+    t_head.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(t_head)
+    w_head = [Inches(2.2), Inches(0.9), Inches(0.9), Inches(0.9), Inches(0.9), Inches(1.0)]
+    for i, h in enumerate(["Model", "Accuracy", "Precision", "Recall", "F1 Score", "ROC-AUC"]):
+        t_head.rows[0].cells[i].text = h
+    format_table_header(t_head.rows[0], w_head)
+
+    head_data = [
+        ("Logistic Regression (Champion)", "0.8852", "0.8387", "0.9286", "0.8814", "0.9665"),
+        ("Random Forest", "0.8361", "0.8000", "0.8571", "0.8276", "0.9416"),
+        ("Gradient Boosting", "0.9016", "0.8667", "0.9286", "0.8966", "0.9610")
+    ]
+    for r_idx, r_vals in enumerate(head_data, start=1):
+        row = t_head.rows[r_idx]
+        for c_idx, v in enumerate(r_vals):
+            row.cells[c_idx].text = v
+    format_table_rows(t_head, w_head)
+
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 3: SETUP AND INSTALLATION
+    # =============================================================
+    add_heading_with_spacing(doc, "2. Setup and installation", level=1)
+    add_p(doc, "Prerequisites: Python 3.11/3.12, Docker Desktop, kubectl, Git.")
+
+    add_callout_box(doc, "Repository Layout Hierarchy (https://github.com/Mohana1507/heart-disease-mlops)", [
+        "heart-disease-mlops/",
+        "├── data/                    # raw/ (UCI download) · processed/heart_clean.csv",
+        "├── notebooks/               # 01_eda.ipynb · 02_training.ipynb · 03_inference.ipynb",
+        "├── src/heart/               # config · data · eda · features · modeling · train · api",
+        "├── tests/                   # 21 pytest unit tests (test_data, test_features, test_model, test_api)",
+        "├── models/                  # model.joblib · metadata.json",
+        "├── k8s/                     # deployment.yaml · service.yaml · hpa.yaml · ingress.yaml",
+        "├── monitoring/              # prometheus.yml · grafana/dashboards/heart-api.json",
+        "├── .github/workflows/ci.yml # 4-stage GitHub Actions pipeline (lint, test, train, docker)",
+        "├── scripts/                 # download_data.py · load_test.py · predict_sample.py",
+        "├── screenshots/             # 14 required visual evidence screenshots",
+        "└── Dockerfile · docker-compose.yml · requirements.txt · requirements-serve.txt"
     ])
 
-    # -------------------------------------------------------------
-    # 3. Data Acquisition and Exploratory Data Analysis
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "3. Data Acquisition and Exploratory Data Analysis", level=1)
+    add_p(doc, "Step 1: Environment and Training (Clean Setup)", bold_prefix="1. Local Setup: ")
+    add_callout_box(doc, "Terminal Execution Commands", [
+        "python -m venv .venv",
+        ".venv\\Scripts\\activate  # Linux/macOS: source .venv/bin/activate",
+        "pip install -r requirements.txt",
+        "python scripts/download_data.py  # Download UCI data -> data/raw/",
+        "python -m heart.eda              # Export 5 diagnostic figures -> reports/figures/",
+        "python -m heart.train            # Run nested CV, log to MLflow, export model.joblib",
+        "pytest -v                        # Run 21 automated unit tests",
+        "flake8 src tests scripts         # Run PEP 8 static analysis"
+    ])
 
-    add_heading_with_spacing(doc, "3.1 Dataset Overview", level=2)
-    add_p(doc,
-        "The UCI Cleveland Heart Disease dataset (Janosi et al., 1989) is the most widely utilized benchmark among the four UCI heart disease "
-        "cohorts. The raw cohort contains 303 patient records and 14 clinical attributes (13 predictors and 1 target). "
-        "Automated ingestion (scripts/download_data.py) verifies file integrity and downloads raw data directly from the UCI archive.")
+    add_p(doc, "Step 2: Run the Stack in Docker", bold_prefix="2. Docker Compose: ")
+    add_callout_box(doc, "Docker Stack Launch Commands", [
+        "docker compose up -d --build",
+        "python scripts/predict_sample.py --url http://localhost:8000",
+        "python scripts/load_test.py --requests 300  # Send synthetic traffic to Grafana"
+    ])
 
-    # Table 3: Schema Overview
-    t3 = doc.add_table(rows=15, cols=4)
-    t3.alignment = WD_TABLE_ALIGNMENT.CENTER
-    set_table_borders(t3)
-    col_w3 = [Inches(1.1), Inches(1.1), Inches(1.6), Inches(2.9)]
-    for i, h in enumerate(["Attribute", "Type", "Domain / Values", "Clinical Description"]):
-        t3.rows[0].cells[i].text = h
-    format_table_header(t3.rows[0], col_w3)
+    add_p(doc, "Step 3: Deploy to Local Kubernetes", bold_prefix="3. Kubernetes Deployment: ")
+    add_callout_box(doc, "Kubernetes Manifest Commands", [
+        "kubectl apply -f k8s/deployment.yaml -f k8s/service.yaml -f k8s/hpa.yaml",
+        "kubectl get pods,svc -l app=heart-disease-api"
+    ])
 
-    t3_data = [
-        ("age", "Continuous", "29 – 77 years", "Patient age in years"),
-        ("sex", "Categorical", "0 = female, 1 = male", "Biological sex"),
-        ("cp", "Categorical", "1: typ. angina, 2: atyp., 3: non-anginal, 4: asympt.", "Chest pain diagnostic type"),
-        ("trestbps", "Continuous", "94 – 200 mm Hg", "Resting blood pressure on hospital admission"),
-        ("chol", "Continuous", "126 – 564 mg/dL", "Serum cholesterol level"),
-        ("fbs", "Categorical", "0 = <=120 mg/dL, 1 = >120 mg/dL", "Fasting blood sugar > 120 mg/dL"),
-        ("restecg", "Categorical", "0: normal, 1: ST-T wave abn., 2: LV hypertrophy", "Resting electrocardiographic findings"),
-        ("thalach", "Continuous", "71 – 202 bpm", "Maximum heart rate achieved during exercise"),
-        ("exang", "Categorical", "0 = no, 1 = yes", "Exercise-induced angina symptom"),
-        ("oldpeak", "Continuous", "0.0 – 6.2 mm", "ST depression induced by exercise relative to rest"),
-        ("slope", "Categorical", "1: upsloping, 2: flat, 3: downsloping", "Peak exercise ST segment slope"),
-        ("ca", "Continuous", "0 – 3 vessels (4 missing)", "Number of major vessels colored by fluoroscopy"),
-        ("thal", "Categorical", "3: normal, 6: fixed defect, 7: revers. (2 miss.)", "Thallium-201 myocardial scintigraphy defect"),
-        ("target (num)", "Binary", "0 = healthy (absent), 1 = disease (present)", "Angiographic coronary artery disease status")
+    add_p(doc, "Table 3 details local endpoints and service ports.", bold_prefix="Access Instructions (Local Cluster & Services): ")
+
+    t_acc = doc.add_table(rows=6, cols=2)
+    t_acc.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(t_acc)
+    w_acc = [Inches(2.8), Inches(4.0)]
+    for i, h in enumerate(["Endpoint / Service", "URL"]):
+        t_acc.rows[0].cells[i].text = h
+    format_table_header(t_acc.rows[0], w_acc)
+
+    acc_data = [
+        ("API Swagger Interactive Documentation", "http://localhost:8000/docs"),
+        ("Direct API Health Check Endpoint", "http://localhost:8000/health"),
+        ("Kubernetes LoadBalancer Service", "http://localhost:80/predict  (or port 8000)"),
+        ("Prometheus Metrics Exposition", "http://localhost:9090"),
+        ("Grafana Production Dashboard", "http://localhost:3000/d/heart-api  (admin/admin)"),
     ]
-    for r_idx, (c0, c1, c2, c3) in enumerate(t3_data, start=1):
-        row = t3.rows[r_idx]
-        row.cells[0].text = c0
-        row.cells[1].text = c1
-        row.cells[2].text = c2
-        row.cells[3].text = c3
-    format_table_rows(t3, col_w3)
+    for r_idx, (ep, url) in enumerate(acc_data, start=1):
+        row = t_acc.rows[r_idx]
+        row.cells[0].text = ep
+        row.cells[1].text = url
+    format_table_rows(t_acc, w_acc)
 
-    add_heading_with_spacing(doc, "3.2 Data Sanitization and Data Leakage Prevention", level=2)
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 4: DATA ACQUISITION AND EDA
+    # =============================================================
+    add_heading_with_spacing(doc, "3. Data acquisition and exploratory data analysis", level=1)
     add_p(doc,
-        "Raw UCI data marks missing entries with '?' characters. The ingestion script parses these to IEEE NaN floats. "
-        "Six total entries contain missing values: four in 'ca' and two in 'thal'. One duplicate row is removed. "
-        "The raw integer target (0 = no disease, 1–4 = varying degrees of coronary stenosis) is binarized to {0, 1}. "
-        "Crucially, the cleaned CSV deliberately preserves NaN values rather than imputing them upfront. Imputation parameters "
-        "are learned strictly inside the training folds of the scikit-learn pipeline, preventing cross-validation data leakage.")
+        "The automated ingestion script (scripts/download_data.py) retrieves processed.cleveland.data directly from the UCI archive. "
+        "Missing values represented by '?' are parsed to IEEE NaN floats. Crucially, zero duplicate records exist in the raw Cleveland data; "
+        "all 303 original clinical cases are retained: 164 healthy subjects (54.1%) and 139 heart disease subjects (45.9%). "
+        "Six total feature values are missing across the cohort (4 in 'ca', 2 in 'thal'). Missing values are deliberately kept as NaNs "
+        "in data/processed/heart_clean.csv to prevent data leakage prior to machine learning pipeline cross-validation.",
+        bold_prefix="Acquisition and Cleaning (src/heart/data.py): ")
 
-    add_heading_with_spacing(doc, "3.3 Exploratory Data Analysis & Empirical Observations", level=2)
-    add_p(doc,
-        "Executing python -m heart.eda generates visual diagnostics exported to reports/figures/ and writes summary statistics "
-        "to reports/eda_summary.txt. Figure 2 presents the target class balance, Pearson correlation matrix, continuous feature "
-        "distributions, and boxplots by disease status.")
-
-    add_2x2_figures(doc,
+    add_side_by_side_figures(doc,
         "screenshots/01_eda_class_balance.png",
         "screenshots/02_eda_correlation.png",
+        "Fig 1. Class balance: 164 healthy vs 139 disease (close to even, avoiding majority-class bias) | Fig 2. Pearson correlation heatmap across 14 clinical attributes.",
+        left_w=Inches(3.3), right_w=Inches(3.3))
+
+    add_figure_if_exists(doc,
         "screenshots/02b_eda_histograms.png",
+        "Fig 3. Continuous feature distributions (age, trestbps, chol, thalach, oldpeak) grouped by target diagnosis (0 = healthy, 1 = disease).",
+        width=Inches(6.4))
+
+    add_p(doc, "Key statistical and clinical insights derived from exploratory analysis:", bold_prefix="Key Findings: ")
+    add_bullet_p(doc, "Maximum Heart Rate (thalach): ", "Exhibits strong negative correlation with disease (r = -0.42). Healthy patients reach a significantly higher median heart rate (158 bpm) than diseased patients (142 bpm), demonstrating chronotropic incompetence.")
+    add_bullet_p(doc, "Exercise ST Depression (oldpeak): ", "Positively correlated with coronary disease (r = +0.42). Diseased patients exhibit marked ST depression (median 1.4 mm vs 0.0 mm for healthy subjects).")
+    add_bullet_p(doc, "Chest Pain Presentation (cp): ", "Asymptomatic presentation (cp = 4) exhibits the highest disease incidence (>72%), demonstrating that advanced coronary obstruction frequently manifests insidiously.")
+    add_bullet_p(doc, "Discrete Feature Codings: ", "cp, restecg, slope, ca, and thal are discrete categorical codes; they are one-hot encoded inside the pipeline rather than treated as ordinal numbers.")
+
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 5: FEATURE ENGINEERING & MODEL SELECTION / TUNING
+    # =============================================================
+    add_figure_if_exists(doc,
         "screenshots/02c_eda_boxplots.png",
-        "Figure 2: Comprehensive EDA suite — (Top-Left) Class balance (54.1% healthy, 45.9% disease); (Top-Right) Pearson correlation matrix; (Bottom-Left) Continuous feature histograms; (Bottom-Right) Clinical boxplots grouped by target diagnosis.",
-        w1=Inches(3.2), w2=Inches(3.2))
+        "Fig 4. Clinical feature boxplots partitioned by target diagnosis. Significant median separation is observed in thalach, oldpeak, and age.",
+        width=Inches(6.4))
 
-    add_p(doc, "Key clinical observations from exploratory analysis:", bold_prefix="Empirical Insights: ")
-    add_bullet_p(doc, "Class Distribution: ", "164 healthy subjects (54.1%) vs 138 disease subjects (45.9%). Well-balanced distribution avoids degenerate majority-class bias.")
-    add_bullet_p(doc, "Maximum Heart Rate (thalach): ", "Exhibits strong negative correlation with disease (r = -0.42). Healthy patients achieve median thalach of 158 bpm compared to 142 bpm for diseased patients, reflecting chronotropic reserve.")
-    add_bullet_p(doc, "Exercise ST Depression (oldpeak): ", "Positively correlated with coronary disease (r = +0.42). Healthy individuals exhibit median ST depression of 0.0 mm vs 1.4 mm in diseased patients.")
-    add_bullet_p(doc, "Chest Pain Type (cp): ", "Asymptomatic presentation (cp = 4) exhibits the highest disease incidence (>72%), demonstrating that advanced coronary obstruction frequently manifests without typical angina.")
-
-    # -------------------------------------------------------------
-    # 4. Feature Engineering and Model Development
-    # -------------------------------------------------------------
     add_heading_with_spacing(doc, "4. Feature Engineering and Model Development", level=1)
-
-    add_heading_with_spacing(doc, "4.1 Preprocessing Pipeline Design", level=2)
     add_p(doc,
-        "To ensure modularity and prevent train-serving skew, all feature transformations are encapsulated in a single scikit-learn "
-        "ColumnTransformer (src/heart/features.py):")
-    add_bullet_p(doc, "Numeric Pipeline (age, trestbps, chol, thalach, oldpeak, ca): ",
-        "Median imputation (SimpleImputer) followed by z-score standardization (StandardScaler).")
-    add_bullet_p(doc, "Categorical Pipeline (sex, cp, fbs, restecg, exang, slope, thal): ",
-        "Most-frequent imputation followed by one-hot encoding (OneHotEncoder(handle_unknown='ignore')).")
+        "To guarantee reproducibility and eliminate train-serving skew, all transformations are encapsulated in a single scikit-learn "
+        "ColumnTransformer (src/heart/features.py). Following src/heart/config.py, 'ca' is categorized with nominal features:",
+        bold_prefix="Preprocessing Architecture (src/heart/features.py): ")
 
-    add_heading_with_spacing(doc, "4.2 Candidate Classifiers and Inductive Biases", level=2)
-    add_p(doc,
-        "Three distinct algorithmic families were selected to explore differing inductive biases:")
-    add_bullet_p(doc, "Logistic Regression (L2-regularized): ", "Linear decision boundary with calibrated probabilistic outputs; robust against overfitting on small medical cohorts (N=242 train).")
-    add_bullet_p(doc, "Random Forest: ", "Non-linear bagging ensemble of decision trees with feature sub-sampling, reducing estimation variance.")
-    add_bullet_p(doc, "Gradient Boosting: ", "Sequential boosting ensemble minimizing binomial deviance, capable of capturing complex non-linear feature interactions.")
+    # Preprocessing Table
+    t_prep = doc.add_table(rows=3, cols=3)
+    t_prep.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(t_prep)
+    w_pr = [Inches(1.2), Inches(2.6), Inches(3.0)]
+    for i, h in enumerate(["Group", "Columns", "Pipeline Transformation Steps"]):
+        t_prep.rows[0].cells[i].text = h
+    format_table_header(t_prep.rows[0], w_pr)
 
-    add_heading_with_spacing(doc, "4.3 Evaluation Protocol & Experimental Results", level=2)
-    add_p(doc,
-        "Model evaluation utilizes a nested cross-validation protocol (5 outer folds, 3 inner folds) on the 80% development split (N=242), "
-        "with a held-out test split (20%, N=61) reserved exclusively for final evaluation. Hyperparameters are optimized via GridSearchCV "
-        "on the inner folds using ROC-AUC scoring.")
-
-    # Table 4: Experimental Results
-    t4 = doc.add_table(rows=4, cols=8)
-    t4.alignment = WD_TABLE_ALIGNMENT.CENTER
-    set_table_borders(t4)
-    col_w4 = [Inches(1.2), Inches(0.8), Inches(0.8), Inches(0.8), Inches(0.8), Inches(1.1), Inches(0.6), Inches(0.6)]
-    headers4 = ["Candidate Model", "CV Acc.", "CV Prec.", "CV Rec.", "CV F1", "CV ROC-AUC", "Test Acc.", "Test AUC"]
-    for i, h in enumerate(headers4):
-        t4.rows[0].cells[i].text = h
-    format_table_header(t4.rows[0], col_w4)
-
-    t4_data = [
-        ("Logistic Regression", "0.8305", "0.8594", "0.7652", "0.8054", "0.9018 ± 0.0156", "88.52%", "0.9665"),
-        ("Random Forest", "0.8057", "0.8082", "0.7826", "0.7933", "0.8914 ± 0.0316", "86.89%", "0.9416"),
-        ("Gradient Boosting", "0.7808", "0.7818", "0.7565", "0.7651", "0.8744 ± 0.0249", "86.89%", "0.9610")
+    prep_data = [
+        ("Numeric", "age, trestbps, chol, thalach, oldpeak", "SimpleImputer(strategy='median') → StandardScaler()"),
+        ("Categorical", "sex, cp, fbs, restecg, exang, slope, ca, thal", "SimpleImputer(strategy='most_frequent') → OneHotEncoder(handle_unknown='ignore')")
     ]
-    for r_idx, row_vals in enumerate(t4_data, start=1):
-        row = t4.rows[r_idx]
-        for c_idx, val in enumerate(row_vals):
+    for r_idx, (g, cols, st) in enumerate(prep_data, start=1):
+        row = t_prep.rows[r_idx]
+        row.cells[0].text = g
+        row.cells[1].text = cols
+        row.cells[2].text = st
+    format_table_rows(t_prep, w_pr)
+
+    add_p(doc,
+        "The dataset is partitioned into an 80% training set (N = 242) and a 20% hold-out test set (N = 61) with stratification (seed 42). "
+        "Hyperparameter optimization is performed via GridSearchCV inside 5-fold StratifiedKFold cross-validation optimizing ROC-AUC.",
+        bold_prefix="Model Selection and Hyperparameter Tuning (src/heart/modeling.py): ")
+
+    # Grid Search Table
+    t_grid = doc.add_table(rows=4, cols=3)
+    t_grid.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(t_grid)
+    w_gr = [Inches(1.8), Inches(2.8), Inches(2.2)]
+    for i, h in enumerate(["Candidate Model", "Hyperparameter Search Grid", "Optimal Hyperparameters Selected"]):
+        t_grid.rows[0].cells[i].text = h
+    format_table_header(t_grid.rows[0], w_gr)
+
+    grid_data = [
+        ("Logistic Regression", "C ∈ {0.01, 0.1, 1.0, 10.0}\npenalty ∈ {'l1', 'l2'}", "C = 0.1, penalty = 'l2'"),
+        ("Random Forest", "n_estimators ∈ {100, 300}\nmax_depth ∈ {3, 6, None}\nmin_samples_leaf ∈ {1, 3, 5}", "n_estimators = 100, max_depth = None,\nmin_samples_leaf = 5"),
+        ("Gradient Boosting", "n_estimators ∈ {100, 200}\nlearning_rate ∈ {0.05, 0.1}\nmax_depth ∈ {2, 3}", "n_estimators = 100, learning_rate = 0.05,\nmax_depth = 2")
+    ]
+    for r_idx, (m, gr, bst) in enumerate(grid_data, start=1):
+        row = t_grid.rows[r_idx]
+        row.cells[0].text = m
+        row.cells[1].text = gr
+        row.cells[2].text = bst
+    format_table_rows(t_grid, w_gr)
+
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 6: MODEL EVALUATION & COMPARISON
+    # =============================================================
+    add_heading_with_spacing(doc, "Evaluation", level=2)
+    add_p(doc, "Evaluation across 5-fold cross-validation and unbiased 61-patient hold-out test set (measured MLflow values):")
+
+    # Complete Evaluation Table matching MLflow exactly
+    t_eval = doc.add_table(rows=4, cols=8)
+    t_eval.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(t_eval)
+    w_ev = [Inches(1.6), Inches(0.75), Inches(0.75), Inches(0.75), Inches(0.75), Inches(1.0), Inches(0.75), Inches(0.95)]
+    for i, h in enumerate(["Model", "CV Acc", "CV Prec", "CV Rec", "CV F1", "CV ROC-AUC", "Test Acc", "Test ROC-AUC"]):
+        t_eval.rows[0].cells[i].text = h
+    format_table_header(t_eval.rows[0], w_ev)
+
+    eval_data = [
+        ("Logistic Regression (Selected)", "0.8305", "0.8594", "0.7652", "0.8054", "0.9018 ± 0.0156", "0.8852", "0.9665"),
+        ("Random Forest", "0.8096", "0.8152", "0.7644", "0.7838", "0.8914 ± 0.0316", "0.8361", "0.9416"),
+        ("Gradient Boosting", "0.8016", "0.7900", "0.7830", "0.7818", "0.8744 ± 0.0249", "0.9016", "0.9610")
+    ]
+    for r_idx, r_vals in enumerate(eval_data, start=1):
+        row = t_eval.rows[r_idx]
+        for c_idx, val in enumerate(r_vals):
             row.cells[c_idx].text = val
-    format_table_rows(t4, col_w4)
+    format_table_rows(t_eval, w_ev)
 
-    add_triplet_figures(doc,
-        "screenshots/model_comparison.png",
-        "screenshots/logistic_regression_confusion_matrix.png",
+    add_side_by_side_figures(doc,
         "screenshots/logistic_regression_roc.png",
-        "Figure 3: (Left) Nested CV ROC-AUC comparison across candidate models; (Center) Champion test Confusion Matrix on 61 patients (26 TP, 28 TN, 5 FP, 2 FN); (Right) Champion test ROC Curve (AUC = 0.9665).",
-        w1=Inches(2.1), w2=Inches(2.1), w3=Inches(2.1))
+        "screenshots/logistic_regression_confusion_matrix.png",
+        "Fig 5. Champion Logistic Regression ROC curve (Test AUC = 0.9665) | Fig 6. Hold-out test Confusion Matrix on 61 patients (26 TP, 28 TN, 5 FP, 2 FN).",
+        left_w=Inches(3.3), right_w=Inches(3.3))
+
+    add_figure_if_exists(doc,
+        "screenshots/model_comparison.png",
+        "Fig 7. Algorithmic comparison of nested cross-validation ROC-AUC scores across candidate model families.",
+        width=Inches(5.0))
 
     add_p(doc,
-        "Performance Discussion: L2-regularized Logistic Regression achieved the highest outer-fold mean ROC-AUC (0.9018 ± 0.0156) "
-        "and demonstrated lower observed variance across outer folds than Random Forest (0.8914 ± 0.0316) and Gradient Boosting (0.8744 ± 0.0249). "
-        "On the independent 61-patient hold-out test set, Logistic Regression attained 88.52% Accuracy, 92.86% Recall (diagnosing 26 of 28 "
-        "diseased patients with only 2 false negatives), and a test ROC-AUC of 0.9665. Consequently, Logistic Regression was promoted to production.")
+        "L2-regularized Logistic Regression achieved the highest cross-validated discrimination (mean ROC-AUC of 0.9018) "
+        "and demonstrated lower estimation variance across folds (std = 0.0156 vs 0.0316 for Random Forest). "
+        "On the independent 61-patient test cohort, Logistic Regression achieved 88.52% Accuracy, 92.86% Recall (catching 26 of 28 "
+        "diseased patients with only 2 false negatives), and a test ROC-AUC of 0.9665. Furthermore, linear model coefficients provide "
+        "direct interpretability essential for clinical decision-support systems.", bold_prefix="Why Logistic Regression: ")
 
-    add_heading_with_spacing(doc, "4.4 Key Engineering Decisions and Practical Challenges", level=2)
-    add_bullet_p(doc, "Preserving Missing Values During Ingestion: ",
-        "The cleaned dataset deliberately preserves NaN markers rather than imputing them globally. Pre-imputation causes subtle data "
-        "leakage because validation fold statistics influence training statistics. Imputing strictly within pipeline folds ensures clean separation.")
-    add_bullet_p(doc, "Multiprocessing Resource Contention on Windows: ",
-        "Setting n_jobs=-1 inside joblib GridSearchCV spawned excessive worker processes on Windows host environments, exhausting memory "
-        "commit limits. This was resolved by parameterizing N_JOBS via environment variables with a safe single-worker default.")
-    add_bullet_p(doc, "Fail-Fast Static Analysis: ",
-        "Enforcing flake8 lint gates in CI initially caught formatting issues in helper scripts. Specific helper excludes were codified in "
-        "setup.cfg to maintain strict standards across production src/ and tests/ modules while allowing specialized scripts.")
+    doc.add_page_break()
 
-    # -------------------------------------------------------------
-    # 5. Experiment Tracking with MLflow
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "5. Experiment Tracking with MLflow", level=1)
+    # =============================================================
+    # PAGE 7: EXPERIMENT TRACKING (MLFLOW)
+    # =============================================================
+    add_heading_with_spacing(doc, "5. Experiment tracking", level=1)
     add_p(doc,
-        "All training runs, hyperparameters, cross-validation metrics, and serialized artifacts are tracked via MLflow (Zaharia et al., 2018) "
-        "under experiment 'heart-disease-risk'. A final promotion run ('final_model_selection') tags the champion model and serializes "
-        "production artifacts.")
+        "MLflow Tracking (local store ./mlruns, experiment namespace 'heart-disease-risk') records every training run:",
+        bold_prefix="MLflow Tracking Server Architecture: ")
+    add_bullet_p(doc, "Parameters: ", "Model type, random seed (42), test split (0.2), outer folds (5), inner folds (3), best hyperparameters (best_clf__C, best_clf__penalty).")
+    add_bullet_p(doc, "Metrics: ", "Mean and standard deviation for 5 cross-validation metrics (accuracy, precision, recall, F1, ROC-AUC) plus hold-out test metrics.")
+    add_bullet_p(doc, "Artifacts: ", "ROC curve and confusion matrix plots, serialized Pipeline model, Conda environment descriptor (conda.yaml), and MLmodel signature.")
 
-    # Table 5: MLflow Taxonomy
-    t5 = doc.add_table(rows=5, cols=2)
-    t5.alignment = WD_TABLE_ALIGNMENT.CENTER
-    set_table_borders(t5)
-    col_w5 = [Inches(1.8), Inches(4.9)]
-    for i, h in enumerate(["Artifact Category", "Logged Metadata and Payloads"]):
-        t5.rows[0].cells[i].text = h
-    format_table_header(t5.rows[0], col_w5)
-
-    t5_data = [
-        ("Parameters", "Model family, random seed (42), test size (0.2), outer folds (5), inner folds (3), train rows (242), test rows (61), best_C, best_penalty."),
-        ("CV Metrics", "Mean and std across 5 outer folds: cv_accuracy, cv_precision, cv_recall, cv_f1, cv_roc_auc, tuning_best_cv_roc_auc."),
-        ("Hold-Out Test Metrics", "Unbiased validation scores on 61 test patients: test_accuracy, test_precision, test_recall, test_f1, test_roc_auc."),
-        ("Logged Artifacts", "Confusion matrix and ROC plots, serialized Pipeline model, Conda environment descriptor, and MLmodel signature.")
-    ]
-    for r_idx, (cat, desc) in enumerate(t5_data, start=1):
-        row = t5.rows[r_idx]
-        row.cells[0].text = cat
-        row.cells[1].text = desc
-    format_table_rows(t5, col_w5)
-
-    add_side_by_side_figures(doc,
+    add_figure_if_exists(doc,
         "screenshots/03_mlflow_runs.png",
+        "Fig 8. MLflow experiment dashboard showing tracked candidate runs (logistic_regression, random_forest, gradient_boosting, final_model_selection).",
+        width=Inches(6.4))
+
+    add_figure_if_exists(doc,
         "screenshots/04_mlflow_run_detail.png",
-        "Figure 4: MLflow Tracking Server — (Left) Candidate runs overview under experiment 'heart-disease-risk'; (Right) Champion Logistic Regression logged parameters (10) and cross-validation/test metrics (16).",
-        left_w=Inches(3.2), right_w=Inches(3.2))
+        "Fig 9. MLflow run detail view: Logged parameters (10) and cross-validation/test metrics (16) for champion Logistic Regression.",
+        width=Inches(6.4))
 
-    # -------------------------------------------------------------
-    # 6. Model Packaging and Reproducibility
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "6. Model Packaging and Reproducibility", level=1)
-    add_p(doc,
-        "To eliminate train-serving skew, the deployable unit produced by src/heart/train.py is the entire fitted scikit-learn Pipeline "
-        "(imputation + scaling + encoding + classifier) serialized to models/model.joblib. The companion metadata file (models/metadata.json) "
-        "records the training timestamp, Git commit SHA, feature ordering, and evaluation metrics.")
+    add_figure_if_exists(doc,
+        "screenshots/04b_mlflow_artifacts.png",
+        "Fig 10. MLflow Artifacts browser: Packaged model directory, MLmodel descriptor, conda.yaml, and exported diagnostic plots.",
+        width=Inches(6.0))
 
-    add_bullet_p(doc, "Fixed Pseudorandom Seeds: ", "Random seed (RANDOM_STATE = 42) is enforced across splits, folds, and estimators, validated by unit test test_training_is_reproducible.")
-    add_bullet_p(doc, "Strict Dependency Pinning: ", "All library versions are pinned in requirements-serve.txt and requirements.txt.")
-    add_bullet_p(doc, "Artifact Immutability: ", "Production containers copy the serialized model directly during build; serving requires no retraining.")
+    doc.add_page_break()
 
-    # -------------------------------------------------------------
-    # 7. Automated Testing and CI/CD Pipeline
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "7. Automated Testing and CI/CD Pipeline", level=1)
+    # =============================================================
+    # PAGE 8: MODEL PACKAGING & TESTING (PYTEST)
+    # =============================================================
+    add_heading_with_spacing(doc, "6. Model packaging and reproducibility", level=1)
+    add_bullet_p(doc, "Format: ", "The fitted Pipeline (preprocessing + classifier) is serialized to models/model.joblib and logged as an MLflow model.")
+    add_bullet_p(doc, "Metadata: ", "models/metadata.json stores the selected model architecture, optimal hyperparameters, Git commit SHA, feature ordering, and validation metrics.")
+    add_bullet_p(doc, "Environment: ", "Strict dependency pinning in requirements.txt (development) and requirements-serve.txt (runtime).")
+    add_bullet_p(doc, "Determinism: ", "RANDOM_STATE = 42 is enforced across splits, folds, and estimators, verified by unit test test_training_is_reproducible.")
+    add_bullet_p(doc, "Unified Code Path: ", "Serving microservice calls the identical pipeline transform; train-serving skew is eliminated by construction.")
 
-    add_heading_with_spacing(doc, "7.1 Unit Testing Framework (pytest)", level=2)
-    add_p(doc,
-        "The test suite comprises 21 automated pytest unit tests across four modules: (1) test_data.py verifies question mark parsing, "
-        "duplicate removal, target binarization, and schema validation; (2) test_features.py asserts null-free output, z-score scaling, and unseen "
-        "category handling; (3) test_model.py confirms candidate architectures, metric bounds, reproducibility, and end-to-end execution; "
-        "(4) test_api.py tests FastAPI endpoints, Pydantic input validation, missing field tolerance, and HTTP 422 error handling. "
-        "An offline synthetic fixture (tests/synthetic.py) ensures tests execute deterministically without external network calls.")
+    add_heading_with_spacing(doc, "7. CI/CD pipeline and automated testing", level=1)
+    add_p(doc, "The automated test suite comprises 21 offline unit tests executed via pytest:", bold_prefix="Unit Tests (tests/, 21 tests): ")
 
-    add_heading_with_spacing(doc, "7.2 Multi-Stage GitHub Actions CI/CD Pipeline", level=2)
-    add_p(doc,
-        "Continuous Integration and Continuous Deployment is automated via GitHub Actions (.github/workflows/ci.yml). "
-        "The pipeline enforces four sequential dependency-gated jobs:")
-    add_bullet_p(doc, "Job 1 (lint): ", "Enforces PEP 8 compliance via flake8 src tests scripts. Any violation halts the pipeline.")
-    add_bullet_p(doc, "Job 2 (test): ", "Installs dependencies, runs 21 pytest tests with coverage, and uploads test reports.")
-    add_bullet_p(doc, "Job 3 (train): ", "Executes data ingestion, EDA, nested CV model training, MLflow tracking, and model packaging.")
-    add_bullet_p(doc, "Job 4 (docker): ", "Builds the serving container, boots it locally, and executes HTTP smoke tests against /health and /predict.")
+    # Unit Tests Table
+    t_test = doc.add_table(rows=5, cols=2)
+    t_test.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(t_test)
+    w_tst = [Inches(1.8), Inches(5.0)]
+    for i, h in enumerate(["Test Module", "Verification Scope"]):
+        t_test.rows[0].cells[i].text = h
+    format_table_header(t_test.rows[0], w_tst)
 
-    add_2x2_figures(doc,
-        "screenshots/05_pytest_pass.png",
-        "screenshots/06_actions_run.png",
-        "screenshots/07_actions_artifacts.png",
-        "screenshots/08_actions_failure.png",
-        "Figure 5: Verification & CI/CD — (Top-Left) Terminal output showing all 21 pytest unit tests passing in 40.24s; (Top-Right) GitHub Actions 4-stage workflow (lint, test, train, docker) all green; (Bottom-Left) Uploaded pipeline build artifacts; (Bottom-Right) Fail-fast demonstration showing pipeline termination on lint error.",
-        w1=Inches(3.2), w2=Inches(3.2))
-
-    # -------------------------------------------------------------
-    # 8. Model Containerization
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "8. Model Containerization", level=1)
-    add_p(doc,
-        "The serving application is packaged into a production Docker container (Dockerfile) utilizing python:3.11-slim. "
-        "Security hardening features include non-root execution (useradd appuser), pinned runtime dependencies, minimal image size (162 MB), "
-        "and a container HEALTHCHECK probing /health every 30 seconds.")
-
-    # Table 6: API Surface
-    t6 = doc.add_table(rows=5, cols=3)
-    t6.alignment = WD_TABLE_ALIGNMENT.CENTER
-    set_table_borders(t6)
-    col_w6 = [Inches(1.5), Inches(1.1), Inches(4.1)]
-    for i, h in enumerate(["Endpoint", "HTTP Method", "Behavior & Response Schema"]):
-        t6.rows[0].cells[i].text = h
-    format_table_header(t6.rows[0], col_w6)
-
-    t6_data = [
-        ("POST /predict", "POST", "Validates PatientFeatures, evaluates model, returns prediction (0/1), label, probability_disease, confidence, model_version."),
-        ("GET /health", "GET", "Probes model readiness. Returns status ('ok') and model_loaded boolean. Used by container and Kubernetes health probes."),
-        ("GET /model-info", "GET", "Exposes metadata.json (training timestamp, Git commit SHA, hold-out evaluation metrics)."),
-        ("GET /metrics", "GET", "Exposes Prometheus telemetry (request counts, latency histograms, prediction class distribution).")
+    test_data = [
+        ("tests/test_data.py", "Parses question marks to NaN, removes duplicates, validates target binarization, rejects invalid schemas."),
+        ("tests/test_features.py", "Ensures ColumnTransformer outputs non-null arrays, standardizes numeric columns, gracefully handles unseen categories."),
+        ("tests/test_model.py", "Confirms candidate model architectures, validates metric bounds, enforces reproducibility, runs end-to-end training."),
+        ("tests/test_api.py", "Tests /health, verifies /predict returns predictions and confidence, tolerates missing optional fields, rejects invalid values with 422.")
     ]
-    for r_idx, (ep, m, beh) in enumerate(t6_data, start=1):
-        row = t6.rows[r_idx]
-        row.cells[0].text = ep
-        row.cells[1].text = m
-        row.cells[2].text = beh
-    format_table_rows(t6, col_w6)
+    for r_idx, (f, v) in enumerate(test_data, start=1):
+        row = t_test.rows[r_idx]
+        row.cells[0].text = f
+        row.cells[1].text = v
+    format_table_rows(t_test, w_tst)
 
-    add_side_by_side_figures(doc,
-        "screenshots/09_docker_build.png",
-        "screenshots/10_docker_predict.png",
-        "Figure 6: Containerization — (Left) Docker single-stage production build completing with 162 MB compressed image; (Right) Container running healthy on port 8000 and returning JSON prediction payload.",
-        left_w=Inches(3.2), right_w=Inches(3.2))
+    add_figure_if_exists(doc,
+        "screenshots/05_pytest_pass.png",
+        "Fig 11. Terminal output showing all 21 pytest unit tests passing with 100% success rate in 40.24 seconds.",
+        width=Inches(6.4))
 
-    # -------------------------------------------------------------
-    # 9. Production Deployment and Kubernetes Orchestration
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "9. Production Deployment and Kubernetes Orchestration", level=1)
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 9: CI/CD PIPELINE & FAIL-FAST PROOF
+    # =============================================================
+    add_heading_with_spacing(doc, "GitHub Actions (.github/workflows/ci.yml)", level=2)
     add_p(doc,
-        "Declarative Kubernetes manifests (k8s/) support scalable production deployment across local clusters (Docker Desktop Kubernetes, "
-        "Minikube) and managed cloud platforms (GKE, EKS, AKS):")
-    add_bullet_p(doc, "Deployment (k8s/deployment.yaml): ", "2 pod replicas for high availability, resource requests (100m CPU, 256Mi RAM), limits (500m CPU, 512Mi RAM), liveness and readiness probes on /health, Prometheus scrape annotations.")
-    add_bullet_p(doc, "Service (k8s/service.yaml): ", "LoadBalancer service exposing HTTP port 80 and routing to container targetPort 8000.")
-    add_bullet_p(doc, "Autoscaling (k8s/hpa.yaml): ", "Horizontal Pod Autoscaler scaling from 2 to 5 replicas when average CPU exceeds 70%.")
+        "Continuous integration triggers on push to main, pull requests, and manual triggers. It enforces four sequential jobs: "
+        "Job 1 (lint): flake8 style conformance; Job 2 (test): installs dependencies, runs 21 pytest tests with coverage; "
+        "Job 3 (train): runs download, EDA, nested CV model training, and uploads artifacts; Job 4 (docker): builds the serving image and runs smoke tests. "
+        "Any failure in an upstream job halts the pipeline immediately (fail-fast).")
 
-    add_heading_with_spacing(doc, "9.2 Deployed API Access and Invocation", level=2)
-    add_p(doc,
-        "The microservice can be queried via standard HTTP clients. Below is the active deployment access specification:")
-    add_bullet_p(doc, "Deployment Host & Port: ", "Local cluster: http://localhost:80 (LoadBalancer) or http://localhost:8000 (direct/port-forward).")
-    add_bullet_p(doc, "Health Verification Endpoint: ", "GET http://localhost/health (returns HTTP 200: {\"status\": \"ok\", \"model_loaded\": true}).")
-    add_bullet_p(doc, "Interactive API Documentation: ", "Swagger UI accessible at http://localhost:8000/docs.")
+    add_figure_if_exists(doc,
+        "screenshots/08_actions_failure.png",
+        "Fig 12. Fail-fast demonstration: An intentional PEP 8 lint error halts the GitHub Actions pipeline at Job 1, preventing defective code from reaching deployment.",
+        width=Inches(6.4))
 
-    add_callout_box(doc, "Sample curl Inference Request", [
-        'curl -X POST http://localhost/predict \\',
-        '  -H "Content-Type: application/json" \\',
-        '  -d \'{"age": 57, "sex": 1, "cp": 2, "trestbps": 130, "chol": 236, \\',
-        '       "fbs": 0, "restecg": 0, "thalach": 174, "exang": 0, "oldpeak": 0.0, \\',
-        '       "slope": 1, "ca": 1, "thal": 3}\'',
+    add_figure_if_exists(doc,
+        "screenshots/08b_workflow_history.png",
+        "Fig 13. GitHub Actions workflow history: Illustrating fail-fast termination on run #1 (red) followed by resolution on run #2 (green).",
+        width=Inches(6.4))
+
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 10: GITHUB ACTIONS EXECUTION RUNS
+    # =============================================================
+    add_heading_with_spacing(doc, "GitHub Actions Workflow Execution", level=2)
+
+    add_figure_if_exists(doc,
+        "screenshots/06_actions_run.png",
+        "Fig 14. Successful GitHub Actions workflow execution: All four jobs (lint, test, train, docker) completed green in 4m 24s.",
+        width=Inches(6.4))
+
+    add_figure_if_exists(doc,
+        "screenshots/07_actions_artifacts.png",
+        "Fig 15. Uploaded build artifacts from CI pipeline: test-reports (JUnit XML), model (model.joblib, metadata.json), mlruns (tracking database), and figures.",
+        width=Inches(6.4))
+
+    add_figure_if_exists(doc,
+        "screenshots/06b_checks_passed.png",
+        "Fig 16. GitHub repository commit verification: All automated branch checks passing on origin/main.",
+        width=Inches(6.4))
+
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 11: CONTAINERIZATION AND REST API
+    # =============================================================
+    add_heading_with_spacing(doc, "8. Containerization and API", level=1)
+    add_bullet_p(doc, "Image: ", "python:3.11-slim base, runtime dependencies only, non-root appuser execution, container HEALTHCHECK probing /health every 30s.")
+    add_bullet_p(doc, "Endpoints: ", "POST /predict (JSON in, prediction and confidence out), GET /health, GET /model-info, GET /metrics, /docs (Swagger UI).")
+    add_bullet_p(doc, "Validation: ", "Pydantic schema enforcing clinical ranges on all 13 features; invalid payloads trigger HTTP 422 with descriptive error details.")
+    add_bullet_p(doc, "Tracing: ", "Each request is tagged with an X-Request-ID header for end-to-end operational traceability.")
+
+    add_callout_box(doc, "Sample POST /predict Request and Response Payload", [
+        'POST /predict',
+        '{"age": 57, "sex": 1, "cp": 2, "trestbps": 130, "chol": 236, "fbs": 0, "restecg": 0,',
+        ' "thalach": 174, "exang": 0, "oldpeak": 0.0, "slope": 1, "ca": 1, "thal": 3}',
         '',
         '# Response (HTTP 200 OK):',
         '{"prediction": 0, "label": "no_disease", "probability_disease": 0.4258,',
         ' "confidence": 0.5742, "model_version": "logistic_regression-20261020082404"}'
     ])
 
-    add_side_by_side_figures(doc,
-        "screenshots/11_k8s_pods_svc.png",
-        "screenshots/12_k8s_predict.png",
-        "Figure 7: Kubernetes Deployment — (Left) Active Pods (pod/heart-disease-api-7b8df95c4d-6m8qk, x92pt) and LoadBalancer Service (10.108.45.192:80); (Right) Successful HTTP inference request routed through the LoadBalancer Service on localhost:80.",
-        left_w=Inches(3.2), right_w=Inches(3.2))
+    add_figure_if_exists(doc,
+        "screenshots/09_docker_build.png",
+        "Fig 17. Docker build execution: Single-stage production container build producing lightweight 162 MB image with non-root security hardening.",
+        width=Inches(6.4))
 
-    # -------------------------------------------------------------
-    # 10. Monitoring and Logging
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "10. Monitoring and Logging", level=1)
+    add_figure_if_exists(doc,
+        "screenshots/10_docker_predict.png",
+        "Fig 18. Local container serving proof: Container running healthy on port 8000 and returning real-time inference prediction.",
+        width=Inches(6.4))
+
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 12: CONTAINER LOGS & OBSERVABILITY TELEMETRY
+    # =============================================================
+    add_heading_with_spacing(doc, "Structured Logging and Privacy Enforcement", level=2)
     add_p(doc,
-        "The observability framework pairs structured JSON request logging with Prometheus metrics collection and a Grafana dashboard:")
-    add_bullet_p(doc, "Privacy-Conscious Structured Request Logging: ",
-        "FastAPI middleware intercepts every HTTP transaction, assigns an X-Request-ID header, tracks latency via time.perf_counter(), "
-        "and logs structured JSON (method, path, status, latency_ms). To comply with healthcare data privacy principles, raw clinical measurements "
-        "are strictly omitted from logs; only the prediction class and confidence are recorded.")
-    add_bullet_p(doc, "Prometheus Metrics Instrumentation: ",
-        "Exposes api_requests_total (partitioned by method, path, status), api_request_latency_seconds (histogram buckets), and predictions_total "
-        "(disease vs no_disease). Bounded route templates prevent metric cardinality explosion.")
-    add_bullet_p(doc, "Grafana Observability Dashboard: ",
-        "docker-compose.yml runs Prometheus (:9090) and Grafana (:3000) alongside the API. Grafana is pre-provisioned with panels for "
-        "Request Throughput, p95 Latency, 5xx Error Rate, and Prediction Class Distribution. In cluster deployments, the identical /metrics endpoint "
-        "is scraped by the cluster Prometheus operator using the pod annotations declared in k8s/deployment.yaml.")
+        "An asynchronous middleware intercepts all HTTP traffic. For every incoming request, it mints a UUID request ID, "
+        "measures latency via time.perf_counter(), and emits a single-line JSON log. Crucially, raw clinical measurements are strictly "
+        "omitted from logs to uphold patient data privacy; only the high-level prediction class and confidence are recorded.")
 
-    add_callout_box(doc, "Observability Verification (Prometheus Scrape Excerpt)", [
-        '# Prometheus Scrape Excerpt (http://localhost:8000/metrics after 300 load test requests):',
+    add_figure_if_exists(doc,
+        "screenshots/13_api_logs.png",
+        "Fig 19. Container access logs displaying privacy-conscious structured JSON telemetry (request ID, method, path, HTTP status, and latency).",
+        width=Inches(6.4))
+
+    add_callout_box(doc, "Structured JSON Access Log Excerpt", [
+        'INFO: 2026-10-20 11:56:38,490 Loaded model from /app/models/model.joblib',
+        'INFO: {"event": "request", "request_id": "c6a2fcf8", "method": "GET", "path": "/health", "status": 200, "latency_ms": 2.21}',
+        'INFO: {"event": "prediction", "label": "no_disease", "probability": 0.4258, "model_version": "logistic_regression-20261020082404"}',
+        'INFO: {"event": "request", "request_id": "f7d7eb28", "method": "POST", "path": "/predict", "status": 200, "latency_ms": 47.95}'
+    ])
+
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 13: PRODUCTION DEPLOYMENT (KUBERNETES)
+    # =============================================================
+    add_heading_with_spacing(doc, "9. Production deployment (Kubernetes)", level=1)
+    add_p(doc,
+        "Declarative Kubernetes manifests (k8s/) support scalable production deployment across local clusters (Docker Desktop Kubernetes, "
+        "Minikube) and managed cloud platforms (GKE, EKS, AKS):",
+        bold_prefix="9.1 Kubernetes Architecture and Manifests: ")
+
+    # K8s Manifests Table
+    t_k8s = doc.add_table(rows=5, cols=3)
+    t_k8s.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(t_k8s)
+    w_k = [Inches(1.8), Inches(1.8), Inches(3.2)]
+    for i, h in enumerate(["Manifest File", "Resource Kind", "Configuration Details"]):
+        t_k8s.rows[0].cells[i].text = h
+    format_table_header(t_k8s.rows[0], w_k)
+
+    k8s_data = [
+        ("k8s/deployment.yaml", "Deployment", "2 replicas, resources: requests(100m, 256Mi), limits(500m, 512Mi), liveness/readiness probes on /health, Prometheus scrape annotations."),
+        ("k8s/service.yaml", "Service", "LoadBalancer service exposing HTTP port 80 and forwarding traffic to container targetPort 8000."),
+        ("k8s/ingress.yaml", "Ingress", "NGINX Ingress routing path-based traffic under domain heart.local."),
+        ("k8s/hpa.yaml", "HorizontalPodAutoscaler", "Autoscales deployment between 2 and 5 replicas when average CPU exceeds 70%.")
+    ]
+    for r_idx, (f, knd, cf) in enumerate(k8s_data, start=1):
+        row = t_k8s.rows[r_idx]
+        row.cells[0].text = f
+        row.cells[1].text = knd
+        row.cells[2].text = cf
+    format_table_rows(t_k8s, w_k)
+
+    add_heading_with_spacing(doc, "9.2 Deployed API Access and Invocation", level=2)
+    add_bullet_p(doc, "Cluster Host & Port: ", "http://localhost:80 (LoadBalancer Service) or http://localhost:8000 (direct).")
+    add_bullet_p(doc, "Health Verification Endpoint: ", "GET http://localhost/health (returns HTTP 200: {\"status\": \"ok\", \"model_loaded\": true}).")
+    add_bullet_p(doc, "Inference Endpoint: ", "POST http://localhost/predict (accepts JSON PatientFeatures, returns prediction payload).")
+
+    add_figure_if_exists(doc,
+        "screenshots/11_k8s_pods_svc.png",
+        "Fig 20. Kubernetes cluster resources: 2 active pods (heart-disease-api-7b8df95c4d-6m8qk, x92pt), LoadBalancer Service (10.108.45.192:80), and HPA.",
+        width=Inches(6.4))
+
+    add_figure_if_exists(doc,
+        "screenshots/12_k8s_predict.png",
+        "Fig 21. Live inference request routed through the Kubernetes LoadBalancer Service on localhost:80 returning 200 OK.",
+        width=Inches(6.4))
+
+    doc.add_page_break()
+
+    # =============================================================
+    # PAGE 14: MONITORING AND OBSERVABILITY
+    # =============================================================
+    add_heading_with_spacing(doc, "10. Monitoring and logging", level=1)
+    add_bullet_p(doc, "Logging: ", "Structured JSON access logs capturing request ID, HTTP method, path, status, and latency_ms without exposing raw patient PII.")
+    add_bullet_p(doc, "Metrics: ", "Prometheus client natively instruments api_requests_total{method,path,status}, api_request_latency_seconds_bucket, and predictions_total{label}.")
+    add_bullet_p(doc, "Grafana Dashboard: ", "docker-compose.yml runs the monitoring stack locally. Pre-provisioned dashboard (monitoring/grafana/dashboards/heart-api.json) visualizes real-time operational telemetry.")
+
+    add_figure_if_exists(doc,
+        "screenshots/14_grafana_dashboard.png",
+        "Fig 22. Real-time Grafana monitoring dashboard: Request rate, p95 latency (<50ms), and prediction distribution (97 no disease vs 191 disease).",
+        width=Inches(6.4))
+
+    add_callout_box(doc, "Prometheus Telemetry Excerpt (http://localhost:8000/metrics after 300 requests)", [
         'api_requests_total{method="POST",path="/predict",status="200"} 288.0',
         'api_requests_total{method="POST",path="/predict",status="422"} 12.0',
         'predictions_total{label="no_disease"} 97.0',
@@ -760,112 +874,79 @@ def build_full_report():
         'api_request_latency_seconds_bucket{le="0.05",path="/predict"} 298.0'
     ])
 
-    add_side_by_side_figures(doc,
-        "screenshots/13_api_logs.png",
-        "screenshots/14_grafana_dashboard.png",
-        "Figure 8: Observability — (Left) Privacy-conscious structured JSON container logs with request IDs and latency; (Right) Real-time Grafana dashboard displaying request rate, p95 latency, and prediction distribution (97 no_disease vs 191 disease).",
-        left_w=Inches(3.1), right_w=Inches(3.3))
+    doc.add_page_break()
 
-    # -------------------------------------------------------------
-    # 11. Limitations, Governance, and Future Work
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "11. Limitations, Governance, and Future Work", level=1)
-    add_p(doc,
-        "Key engineering constraints and governance considerations:")
-    add_bullet_p(doc, "Sample Size & Population Drift: ",
-        "The Cleveland benchmark is small (N=303) and reflects historical patient demographics (1989). In production, a data-drift detector "
-        "(e.g., Evidently AI) should monitor Kolmogorov-Smirnov statistics on continuous inputs and Population Stability Index (PSI) on categorical features.")
-    add_bullet_p(doc, "Automated Model Governance & Promotion: ",
-        "Future iterations should integrate a formal model registry with automated canary deployment gates, comparing newly trained models "
-        "against production champions on shadow traffic before routing clinical requests.")
+    # =============================================================
+    # PAGE 15: ARCHITECTURE, DELIVERABLES & VIDEO DEMONSTRATION
+    # =============================================================
+    add_heading_with_spacing(doc, "11. Architecture, deliverables and repository", level=1)
 
-    # -------------------------------------------------------------
-    # 12. Conclusion
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "12. Conclusion", level=1)
-    add_p(doc,
-        "This project establishes a reproducible, production-grade MLOps pipeline for heart disease risk classification. "
-        "Through leakage-free data processing, nested cross-validation, MLflow tracking, containerization with security hardening, "
-        "declarative Kubernetes orchestration, and continuous monitoring via Prometheus and Grafana, the implementation satisfies "
-        "the operational requirements of dependable clinical machine learning engineering.")
+    add_figure_if_exists(doc,
+        "docs/architecture.png",
+        "Fig 23. End-to-end MLOps pipeline architecture from data ingestion to Kubernetes serving and Grafana monitoring.",
+        width=Inches(6.4))
 
-    # -------------------------------------------------------------
-    # Appendix A: Repository Structure
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "Appendix A: Repository Structure", level=1)
-    add_p(doc, "The repository is structured into standard production components:")
-    add_callout_box(doc, "Directory Hierarchy (https://github.com/Mohana1507/heart-disease-mlops)", [
-        "heart-disease-mlops/",
-        "├── .github/workflows/ci.yml     # 4-stage GitHub Actions CI/CD workflow",
-        "├── src/heart/                   # Production library (data, features, modeling, api)",
-        "├── tests/                       # 21 automated unit tests and synthetic data fixture",
-        "├── notebooks/                   # Jupyter notebooks (01_eda, 02_training, 03_inference)",
-        "├── k8s/                         # Kubernetes manifests (deployment, service, hpa)",
-        "├── monitoring/                  # Prometheus and Grafana provisioning configurations",
-        "├── screenshots/                 # Visual evidence suite for submission verification",
-        "├── Dockerfile & docker-compose  # Containerization & local observability stack",
-        "└── requirements.txt             # Pinned dependencies for reproducible execution"
-    ])
+    # Deliverables Checklist Table
+    t_deliv = doc.add_table(rows=10, cols=2)
+    t_deliv.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(t_deliv)
+    w_dl = [Inches(2.6), Inches(4.2)]
+    for i, h in enumerate(["Deliverable Component", "Repository Location"]):
+        t_deliv.rows[0].cells[i].text = h
+    format_table_header(t_deliv.rows[0], w_dl)
 
-    # -------------------------------------------------------------
-    # Appendix B: Pipeline Demonstration Video
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "Appendix B: Pipeline Demonstration Video", level=1)
-    add_p(doc,
-        "A recorded video walkthrough demonstrates the complete MLOps workflow from repository structure to live monitoring.",
-        bold_prefix="Video Demonstration Link: ")
+    deliv_data = [
+        ("Code, Dockerfile, requirements", "src/heart/, Dockerfile, docker-compose.yml, requirements*.txt"),
+        ("Cleaned dataset + download script", "data/processed/heart_clean.csv, scripts/download_data.py"),
+        ("Notebooks (EDA, training, inference)", "notebooks/01_eda.ipynb, 02_training.ipynb, 03_inference.ipynb"),
+        ("Unit tests suite (21 tests)", "tests/ (test_data.py, test_features.py, test_model.py, test_api.py)"),
+        ("CI/CD pipeline workflow", ".github/workflows/ci.yml"),
+        ("Kubernetes manifests", "k8s/deployment.yaml, k8s/service.yaml, k8s/hpa.yaml, k8s/ingress.yaml"),
+        ("Screenshots suite (14 items)", "screenshots/"),
+        ("Technical report", "MLOps_Report.docx, docs/MLOps_Report.docx"),
+        ("Access instructions & Video outline", "README.md, Section 2 & Appendix B")
+    ]
+    for r_idx, (comp, loc) in enumerate(deliv_data, start=1):
+        row = t_deliv.rows[r_idx]
+        row.cells[0].text = comp
+        row.cells[1].text = loc
+    format_table_rows(t_deliv, w_dl)
 
-    # Highlighted Callout Box for Video Link
-    add_callout_box(doc, "VIDEO WALKTHROUGH ACCESS & SUBMISSION LINK", [
+    add_p(doc, "https://github.com/Mohana1507/heart-disease-mlops", bold_prefix="GitHub Repository: ")
+
+    # Highlighted Video Submission Callout Box
+    add_callout_box(doc, "PIPELINE DEMONSTRATION VIDEO ACCESS & SUBMISSION LINK", [
         "Video URL: [PASTE_YOUR_VIDEO_LINK_HERE: e.g., https://youtu.be/xxxx or Google Drive link]",
         "",
-        "Access Permissions: Set to 'Unlisted' on YouTube or 'Anyone with the link can view' on Drive.",
-        "Demonstration Duration: Approximately 4 minutes.",
+        "Access Permissions: Set to 'Unlisted' on YouTube or 'Anyone with the link can view' on Google Drive.",
+        "Demonstration Duration: Approximately 4 minutes 30 seconds.",
         "Key Demonstrations Covered:",
-        "  - 0:00 - 0:45 : Repository structure, modular code design, and environment setup.",
+        "  - 0:00 - 0:45 : Repository structure, modular src/ package, and environment setup.",
         "  - 0:45 - 1:30 : GitHub Actions CI/CD pipeline run with all 4 jobs green (lint, test, train, docker).",
-        "  - 1:30 - 2:15 : MLflow Tracking UI demonstrating candidate model runs and champion selection.",
-        "  - 2:15 - 3:00 : Docker container execution and /predict inference verification.",
-        "  - 3:00 - 4:00 : Real-time Grafana monitoring dashboard under active synthetic load."
+        "  - 1:30 - 2:15 : MLflow Tracking UI demonstrating candidate models, hyperparameter grids, and artifacts.",
+        "  - 2:15 - 3:00 : Docker container packaging, non-root user execution, and /predict inference verification.",
+        "  - 3:00 - 3:45 : Kubernetes deployment (kubectl apply, 2 ready pods, LoadBalancer Service inference).",
+        "  - 3:45 - 4:30 : Real-time Prometheus & Grafana dashboard under active synthetic load test."
     ], border_color="0066CC", bg_color="EBF3FB")
 
-    # -------------------------------------------------------------
-    # References
-    # -------------------------------------------------------------
-    add_heading_with_spacing(doc, "References", level=1)
-    refs = [
-        "Detrano, R., Janosi, A., Steinbrunn, W., Pfisterer, M., Schmid, J., Sandhu, S., Guppy, K., Lee, S., & Froelicher, V. (1989). International application of a new probability algorithm for the diagnosis of coronary artery disease. The American Journal of Cardiology, 64(5), 304–310.",
-        "Dua, D., & Graff, C. (2019). UCI Machine Learning Repository: Heart Disease Data Set. University of California, Irvine, School of Information and Computer Sciences. https://archive.ics.uci.edu/ml/datasets/Heart+Disease",
-        "Janosi, A., Steinbrunn, W., Pfisterer, M., & Detrano, R. (1989). Heart Disease Database (Cleveland Clinic Foundation). UCI Machine Learning Repository.",
-        "Kubernetes Authors. (2024). Kubernetes: Production-Grade Container Orchestration (Version 1.30). Cloud Native Computing Foundation. https://kubernetes.io/docs/",
-        "Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., Blondel, M., Prettenhofer, P., Weiss, R., Dubourg, V., Vanderplas, J., Passos, A., Cournapeau, D., Brucher, M., Perrot, M., & Duchesnay, E. (2011). Scikit-learn: Machine learning in Python. Journal of Machine Learning Research, 12, 2825–2830.",
-        "Prometheus Authors. (2024). Prometheus: An Open-Source Systems Monitoring and Alerting Toolkit (Version 2.54). Cloud Native Computing Foundation. https://prometheus.io/docs/",
-        "Tiangolo, S. (2024). FastAPI: Modern, Fast (High-Performance), Web Framework for Building APIs with Python 3.8+ (Version 0.115). https://fastapi.tiangolo.com/",
-        "World Health Organization. (2021). Cardiovascular diseases (CVDs) Fact Sheet. World Health Organization. https://www.who.int/news-room/fact-sheets/detail/cardiovascular-diseases-(cvds)",
-        "Zaharia, M., Chen, A., Davidson, A., Ghodsi, A., Hong, S. A., Konwinski, A., Murching, S., Nykodym, T., Ogilvie, P., Parkhe, M., Xie, F., & Zumar, C. (2018). Accelerating the machine learning lifecycle with MLflow. IEEE Data Engineering Bulletin, 41(4), 39–45."
-    ]
-    for r in refs:
-        p_ref = doc.add_paragraph()
-        p_ref.paragraph_format.left_indent = Inches(0.4)
-        p_ref.paragraph_format.first_line_indent = Inches(-0.4)
-        p_ref.paragraph_format.space_before = Pt(1)
-        p_ref.paragraph_format.space_after = Pt(2)
-        p_ref.paragraph_format.line_spacing = 1.12
-        r_ref = p_ref.add_run(r)
-        r_ref.font.size = Pt(8.5)
-        r_ref.font.color.rgb = RGBColor(40, 40, 40)
+    add_p(doc,
+        "Limitations and Next Steps: The Cleveland benchmark reflects a modest sample size (N=303). "
+        "Production enhancements should include: (1) automated model registry with canary deployment gates; "
+        "(2) Evidently AI data drift detection on streaming clinical distributions; (3) Helm chart packaging for multi-environment cluster promotion.",
+        bold_prefix="Limitations and Future Work: ")
 
     # Save to target locations
     out_root = Path("MLOps_Report.docx")
     out_docs = Path("docs/MLOps_Report.docx")
+    out_fallback = Path("MLOps_Report_Updated.docx")
     out_docs.parent.mkdir(parents=True, exist_ok=True)
+
     try:
         doc.save(out_root)
         print(f"Report successfully saved to {out_root}")
     except PermissionError:
-        out_fallback = Path("MLOps_Report_Updated.docx")
         doc.save(out_fallback)
-        print(f"WARNING: {out_root} is open in Word/LibreOffice! Saved updated version to {out_fallback}")
+        print(f"WARNING: {out_root} is open in Word! Saved updated version to {out_fallback}")
 
     try:
         doc.save(out_docs)
