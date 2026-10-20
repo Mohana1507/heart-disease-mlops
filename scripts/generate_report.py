@@ -6,7 +6,7 @@ metrics from MLflow, hyperparameter tuning grids, and production Kubernetes mani
 
 Outputs:
   - docs/MLOps_Report.docx (primary)
-  - MLOps_Report_Updated.docx (root fallback)
+  - MLOps_Report.docx (root)
 """
 import os
 from pathlib import Path
@@ -26,7 +26,7 @@ def set_cell_background(cell, fill_hex):
     tcPr.append(shd)
 
 
-def set_cell_margins(cell, top=70, bottom=70, left=110, right=110):
+def set_cell_margins(cell, top=65, bottom=65, left=100, right=100):
     """Set inner cell padding in twentieths of a point (dxa)."""
     tcPr = cell._tc.get_or_add_tcPr()
     tcMar = parse_xml(
@@ -60,7 +60,7 @@ def format_table_header(row, col_widths, bg_hex="1B365D"):
     """Format table header row with bold white text on dark navy background."""
     for i, cell in enumerate(row.cells):
         set_cell_background(cell, bg_hex)
-        set_cell_margins(cell, top=80, bottom=80, left=100, right=100)
+        set_cell_margins(cell, top=75, bottom=75, left=95, right=95)
         cell.width = col_widths[i]
         for p in cell.paragraphs:
             p.paragraph_format.space_before = Pt(0)
@@ -77,7 +77,7 @@ def format_table_rows(table, col_widths, alternate_bg=True):
         bg = "F7F9FB" if (r_idx % 2 == 1 and alternate_bg) else "FFFFFF"
         for c_idx, cell in enumerate(row.cells):
             set_cell_background(cell, bg)
-            set_cell_margins(cell, top=55, bottom=55, left=100, right=100)
+            set_cell_margins(cell, top=50, bottom=50, left=95, right=95)
             cell.width = col_widths[c_idx]
             for p in cell.paragraphs:
                 p.paragraph_format.space_before = Pt(0)
@@ -87,6 +87,19 @@ def format_table_rows(table, col_widths, alternate_bg=True):
                     r.font.color.rgb = RGBColor(40, 40, 40)
 
 
+def add_table_caption(doc, text):
+    """Add a formal, professional table title/caption above a table."""
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(2)
+    p.paragraph_format.keep_with_next = True
+    r = p.add_run(text)
+    r.font.bold = True
+    r.font.size = Pt(8.5)
+    r.font.color.rgb = RGBColor(27, 54, 93)
+    return p
+
+
 def add_callout_box(doc, title, content_lines, border_color="1B365D", bg_color="F0F4F8"):
     """Create a high-visibility, professional callout panel for commands and metrics."""
     tbl = doc.add_table(rows=1, cols=1)
@@ -94,7 +107,7 @@ def add_callout_box(doc, title, content_lines, border_color="1B365D", bg_color="
     cell = tbl.cell(0, 0)
     cell.width = Inches(6.8)
     set_cell_background(cell, bg_color)
-    set_cell_margins(cell, top=80, bottom=80, left=130, right=130)
+    set_cell_margins(cell, top=70, bottom=70, left=120, right=120)
 
     tcPr = cell._tc.get_or_add_tcPr()
     borders = parse_xml(
@@ -133,14 +146,14 @@ def add_heading_with_spacing(doc, text, level):
     h = doc.add_heading(text, level=level)
     h.paragraph_format.keep_with_next = True
     if level == 1:
-        h.paragraph_format.space_before = Pt(10)
+        h.paragraph_format.space_before = Pt(9)
         h.paragraph_format.space_after = Pt(2)
         for r in h.runs:
             r.font.color.rgb = RGBColor(27, 54, 93)
-            r.font.size = Pt(13)
+            r.font.size = Pt(12.5)
             r.font.bold = True
     elif level == 2:
-        h.paragraph_format.space_before = Pt(7)
+        h.paragraph_format.space_before = Pt(6)
         h.paragraph_format.space_after = Pt(2)
         for r in h.runs:
             r.font.color.rgb = RGBColor(41, 74, 110)
@@ -295,7 +308,7 @@ def build_full_report():
         ("Student name", "Mohanapriya M"),
         ("Student ID", "2025AE05482"),
         ("Course", "Machine Learning Operations (MLOps), AIMLCZG523"),
-        ("Dataset", "UCI Heart Disease (Cleveland), 303 patients, 13 features"),
+        ("Dataset", "UCI Heart Disease (Cleveland), 303 patients, 13 features + target (14 attributes total)"),
         ("Final model", "Logistic Regression (C = 0.1, penalty = l2), CV ROC-AUC 0.9018, test ROC-AUC 0.9665"),
         ("Serving", "FastAPI in Docker, with Docker Compose and Kubernetes (Deployment, Service, HPA, Ingress)"),
         ("Tooling", "scikit-learn, MLflow, pytest, flake8, GitHub Actions, Prometheus, Grafana"),
@@ -364,7 +377,7 @@ def build_full_report():
         "angiographic disease diagnosis 'num' (0 = absence; 1–4 = presence of coronary artery disease). Under standard clinical AI protocol, "
         "num > 0 is binarized to target = 1.", bold_prefix="Dataset Context: ")
 
-    # Schema Table
+    add_table_caption(doc, "Table 1: UCI Cleveland Clinical Feature Schema (13 Predictors + Target)")
     t_schema = doc.add_table(rows=15, cols=3)
     t_schema.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_schema)
@@ -397,16 +410,14 @@ def build_full_report():
     format_table_rows(t_schema, w_sch)
 
     add_p(doc, "Key operational components of the engineering lifecycle:", bold_prefix="Solution at a Glance: ")
-    add_bullet_p(doc, "Data: ", "scripts/download_data.py downloads UCI data; src/heart/data.py cleans and preserves missing values without data leakage.")
-    add_bullet_p(doc, "Modelling: ", "scikit-learn Pipeline (ColumnTransformer + Classifier) evaluated across LR, RF, and GB using 5x3 nested cross-validation.")
-    add_bullet_p(doc, "Tracking: ", "MLflow logs hyperparameter grids, cross-validation metrics, test scores, ROC/PR curves, and serialized MLmodel packages.")
+    add_bullet_p(doc, "Data: ", "scripts/download_data.py downloads UCI data; src/heart/data.py cleans types and preserves missing values without data leakage.")
+    add_bullet_p(doc, "Modelling: ", "scikit-learn Pipeline (ColumnTransformer + Classifier) evaluated across LR, RF, and GB using 5 outer folds and 3 inner folds (5x3 nested CV).")
+    add_bullet_p(doc, "Tracking: ", "MLflow logs hyperparameter search grids, cross-validation metrics, test scores, ROC/PR curves, and serialized MLmodel packages.")
     add_bullet_p(doc, "Quality gates: ", "flake8 linting and 21 automated pytest unit tests executed locally and across a 4-stage GitHub Actions CI/CD workflow.")
     add_bullet_p(doc, "Serving: ", "FastAPI /predict microservice packaged in a 162 MB non-root container image, orchestrated via Docker Compose and Kubernetes.")
     add_bullet_p(doc, "Observability: ", "Privacy-conscious JSON access logs (no patient PII), Prometheus telemetry (/metrics), and pre-provisioned Grafana dashboard.")
 
-    add_p(doc, "Table 2 summarizes the unbiased hold-out test set performance across 61 test patients.", bold_prefix="Headline Results (Held-Out Test Set, N = 61): ")
-
-    # Headline Results Table
+    add_table_caption(doc, "Table 2: Headline Hold-Out Test Results (N = 61 Patients)")
     t_head = doc.add_table(rows=4, cols=6)
     t_head.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_head)
@@ -449,33 +460,37 @@ def build_full_report():
         "└── Dockerfile · docker-compose.yml · requirements.txt · requirements-serve.txt"
     ])
 
-    add_p(doc, "Step 1: Environment and Training (Clean Setup)", bold_prefix="1. Local Setup: ")
+    add_p(doc, "1. Environment Setup, Training & Testing:", bold_prefix="Step 1: Local Reproduction: ")
     add_callout_box(doc, "Terminal Execution Commands", [
         "python -m venv .venv",
         ".venv\\Scripts\\activate  # Linux/macOS: source .venv/bin/activate",
         "pip install -r requirements.txt",
-        "python scripts/download_data.py  # Download UCI data -> data/raw/",
-        "python -m heart.eda              # Export 5 diagnostic figures -> reports/figures/",
-        "python -m heart.train            # Run nested CV, log to MLflow, export model.joblib",
-        "pytest -v                        # Run 21 automated unit tests",
-        "flake8 src tests scripts         # Run PEP 8 static analysis"
+        "python scripts/download_data.py  # Ingest raw UCI data",
+        "python -m heart.eda              # Export diagnostic figures",
+        "python -m heart.train            # Run 5x3 nested CV, log to MLflow, export model.joblib",
+        "mlflow ui --backend-store-uri ./mlruns --port 5000  # Inspect MLflow UI",
+        "pytest -v                        # Execute 21 unit tests",
+        "flake8 src tests scripts         # Run static analysis"
     ])
 
-    add_p(doc, "Step 2: Run the Stack in Docker", bold_prefix="2. Docker Compose: ")
-    add_callout_box(doc, "Docker Stack Launch Commands", [
+    add_p(doc, "2. Run the Stack in Docker Compose:", bold_prefix="Step 2: Docker Compose Serving: ")
+    add_callout_box(doc, "Docker Compose Commands", [
         "docker compose up -d --build",
         "python scripts/predict_sample.py --url http://localhost:8000",
-        "python scripts/load_test.py --requests 300  # Send synthetic traffic to Grafana"
+        "python scripts/load_test.py --requests 300  # Populate Grafana with traffic"
     ])
 
-    add_p(doc, "Step 3: Deploy to Local Kubernetes", bold_prefix="3. Kubernetes Deployment: ")
+    add_p(doc, "3. Build Container and Deploy to Local Kubernetes:", bold_prefix="Step 3: Kubernetes Deployment: ")
     add_callout_box(doc, "Kubernetes Manifest Commands", [
-        "kubectl apply -f k8s/deployment.yaml -f k8s/service.yaml -f k8s/hpa.yaml",
+        "# Build and tag container image into local Docker daemon:",
+        "docker build -t heart-disease-api:1.0.0 .",
+        "# Apply declarative manifests (Deployment, Service, HPA, and Ingress):",
+        "kubectl apply -f k8s/",
+        "# (Note: Ingress requires an active controller, e.g. minikube addons enable ingress)",
         "kubectl get pods,svc -l app=heart-disease-api"
     ])
 
-    add_p(doc, "Table 3 details local endpoints and service ports.", bold_prefix="Access Instructions (Local Cluster & Services): ")
-
+    add_table_caption(doc, "Table 3: Local Service Access Endpoints and Ports")
     t_acc = doc.add_table(rows=6, cols=2)
     t_acc.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_acc)
@@ -507,9 +522,16 @@ def build_full_report():
         "The automated ingestion script (scripts/download_data.py) retrieves processed.cleveland.data directly from the UCI archive. "
         "Missing values represented by '?' are parsed to IEEE NaN floats. Crucially, zero duplicate records exist in the raw Cleveland data; "
         "all 303 original clinical cases are retained: 164 healthy subjects (54.1%) and 139 heart disease subjects (45.9%). "
-        "Six total feature values are missing across the cohort (4 in 'ca', 2 in 'thal'). Missing values are deliberately kept as NaNs "
-        "in data/processed/heart_clean.csv to prevent data leakage prior to machine learning pipeline cross-validation.",
+        "Six total feature values are missing across the cohort (4 in 'ca', 2 in 'thal').",
         bold_prefix="Acquisition and Cleaning (src/heart/data.py): ")
+
+    add_p(doc,
+        "Handling Missing Values & Imputation Strategy: In production MLOps engineering, imputing missing values prior to train-test "
+        "splitting introduces subtle data leakage, as test fold distributions leak into the imputer statistics. Therefore, "
+        "data/processed/heart_clean.csv sanitizes types and preserves NaNs, while complete imputation is encapsulated directly within the "
+        "scikit-learn ColumnTransformer pipeline (SimpleImputer with median for numeric, mode for categorical). This guarantees that imputation "
+        "parameters are learned strictly within cross-validation training folds and applied identically at inference time, satisfying Task 1.",
+        bold_prefix="Leakage-Free Imputation Architecture: ")
 
     add_side_by_side_figures(doc,
         "screenshots/01_eda_class_balance.png",
@@ -544,7 +566,7 @@ def build_full_report():
         "ColumnTransformer (src/heart/features.py). Following src/heart/config.py, 'ca' is categorized with nominal features:",
         bold_prefix="Preprocessing Architecture (src/heart/features.py): ")
 
-    # Preprocessing Table
+    add_table_caption(doc, "Table 4: Feature Preprocessing Pipeline Architecture")
     t_prep = doc.add_table(rows=3, cols=3)
     t_prep.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_prep)
@@ -565,11 +587,12 @@ def build_full_report():
     format_table_rows(t_prep, w_pr)
 
     add_p(doc,
-        "The dataset is partitioned into an 80% training set (N = 242) and a 20% hold-out test set (N = 61) with stratification (seed 42). "
-        "Hyperparameter optimization is performed via GridSearchCV inside 5-fold StratifiedKFold cross-validation optimizing ROC-AUC.",
+        "The cohort is partitioned into an 80% training set (N = 242) and a 20% hold-out test set (N = 61) with stratification (seed 42). "
+        "Candidate classifiers are tuned using a nested cross-validation protocol: 5 outer folds for unbiased performance estimation, "
+        "and 3 inner folds (5x3 nested CV) for hyperparameter optimization via GridSearchCV optimizing ROC-AUC.",
         bold_prefix="Model Selection and Hyperparameter Tuning (src/heart/modeling.py): ")
 
-    # Grid Search Table
+    add_table_caption(doc, "Table 5: Candidate Model Hyperparameter Search Grids and Optimal Parameters")
     t_grid = doc.add_table(rows=4, cols=3)
     t_grid.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_grid)
@@ -579,7 +602,7 @@ def build_full_report():
     format_table_header(t_grid.rows[0], w_gr)
 
     grid_data = [
-        ("Logistic Regression", "C ∈ {0.01, 0.1, 1.0, 10.0}\npenalty ∈ {'l1', 'l2'}", "C = 0.1, penalty = 'l2'"),
+        ("Logistic Regression", "C ∈ {0.01, 0.1, 1.0}\npenalty ∈ {'l1', 'l2'}\n(grid_size = 6 combinations)", "C = 0.1, penalty = 'l2'"),
         ("Random Forest", "n_estimators ∈ {100, 300}\nmax_depth ∈ {3, 6, None}\nmin_samples_leaf ∈ {1, 3, 5}", "n_estimators = 100, max_depth = None,\nmin_samples_leaf = 5"),
         ("Gradient Boosting", "n_estimators ∈ {100, 200}\nlearning_rate ∈ {0.05, 0.1}\nmax_depth ∈ {2, 3}", "n_estimators = 100, learning_rate = 0.05,\nmax_depth = 2")
     ]
@@ -598,7 +621,7 @@ def build_full_report():
     add_heading_with_spacing(doc, "Evaluation", level=2)
     add_p(doc, "Evaluation across 5-fold cross-validation and unbiased 61-patient hold-out test set (measured MLflow values):")
 
-    # Complete Evaluation Table matching MLflow exactly
+    add_table_caption(doc, "Table 6: Candidate Model Cross-Validation and Test Evaluation Metrics")
     t_eval = doc.add_table(rows=4, cols=8)
     t_eval.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_eval)
@@ -656,7 +679,7 @@ def build_full_report():
 
     add_figure_if_exists(doc,
         "screenshots/04_mlflow_run_detail.png",
-        "Fig 9. MLflow run detail view: Logged parameters (10) and cross-validation/test metrics (16) for champion Logistic Regression.",
+        "Fig 9. MLflow run detail view: Logged parameters (10, confirming grid_size = 6, inner_folds = 3, outer_folds = 5) and metrics (16) for champion Logistic Regression.",
         width=Inches(6.4))
 
     add_figure_if_exists(doc,
@@ -679,7 +702,7 @@ def build_full_report():
     add_heading_with_spacing(doc, "7. CI/CD pipeline and automated testing", level=1)
     add_p(doc, "The automated test suite comprises 21 offline unit tests executed via pytest:", bold_prefix="Unit Tests (tests/, 21 tests): ")
 
-    # Unit Tests Table
+    add_table_caption(doc, "Table 7: Automated Unit Test Suite Scope (21 pytest tests)")
     t_test = doc.add_table(rows=5, cols=2)
     t_test.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_test)
@@ -715,16 +738,17 @@ def build_full_report():
         "Continuous integration triggers on push to main, pull requests, and manual triggers. It enforces four sequential jobs: "
         "Job 1 (lint): flake8 style conformance; Job 2 (test): installs dependencies, runs 21 pytest tests with coverage; "
         "Job 3 (train): runs download, EDA, nested CV model training, and uploads artifacts; Job 4 (docker): builds the serving image and runs smoke tests. "
-        "Any failure in an upstream job halts the pipeline immediately (fail-fast).")
+        "The CI/CD pipeline enforces strict quality gates: any PEP 8 style violation or failing pytest unit test immediately halts the pipeline "
+        "with non-zero exit code, preventing defective code from reaching training or packaging.")
 
     add_figure_if_exists(doc,
         "screenshots/08_actions_failure.png",
-        "Fig 12. Fail-fast demonstration: An intentional PEP 8 lint error halts the GitHub Actions pipeline at Job 1, preventing defective code from reaching deployment.",
+        "Fig 12. CI/CD fail-fast verification: Job 1 (lint) strictly halts the pipeline upon flake8 line-length violations in helper scripts, preventing defective code from progressing to testing, training, or container build stages.",
         width=Inches(6.4))
 
     add_figure_if_exists(doc,
         "screenshots/08b_workflow_history.png",
-        "Fig 13. GitHub Actions workflow history: Illustrating fail-fast termination on run #1 (red) followed by resolution on run #2 (green).",
+        "Fig 13. GitHub Actions workflow run history: Showing initial build failure on run #1 (red) followed by resolution on run #2 (green) after standardizing setup.cfg to enforce strict linting across core production and test modules.",
         width=Inches(6.4))
 
     doc.add_page_break()
@@ -814,7 +838,7 @@ def build_full_report():
         "Minikube) and managed cloud platforms (GKE, EKS, AKS):",
         bold_prefix="9.1 Kubernetes Architecture and Manifests: ")
 
-    # K8s Manifests Table
+    add_table_caption(doc, "Table 8: Declarative Kubernetes Manifests Specification")
     t_k8s = doc.add_table(rows=5, cols=3)
     t_k8s.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_k8s)
@@ -826,7 +850,7 @@ def build_full_report():
     k8s_data = [
         ("k8s/deployment.yaml", "Deployment", "2 replicas, resources: requests(100m, 256Mi), limits(500m, 512Mi), liveness/readiness probes on /health, Prometheus scrape annotations."),
         ("k8s/service.yaml", "Service", "LoadBalancer service exposing HTTP port 80 and forwarding traffic to container targetPort 8000."),
-        ("k8s/ingress.yaml", "Ingress", "NGINX Ingress routing path-based traffic under domain heart.local."),
+        ("k8s/ingress.yaml", "Ingress", "NGINX Ingress routing path-based traffic under domain heart.local (requires active ingress controller)."),
         ("k8s/hpa.yaml", "HorizontalPodAutoscaler", "Autoscales deployment between 2 and 5 replicas when average CPU exceeds 70%.")
     ]
     for r_idx, (f, knd, cf) in enumerate(k8s_data, start=1):
@@ -860,6 +884,7 @@ def build_full_report():
     add_bullet_p(doc, "Logging: ", "Structured JSON access logs capturing request ID, HTTP method, path, status, and latency_ms without exposing raw patient PII.")
     add_bullet_p(doc, "Metrics: ", "Prometheus client natively instruments api_requests_total{method,path,status}, api_request_latency_seconds_bucket, and predictions_total{label}.")
     add_bullet_p(doc, "Grafana Dashboard: ", "docker-compose.yml runs the monitoring stack locally. Pre-provisioned dashboard (monitoring/grafana/dashboards/heart-api.json) visualizes real-time operational telemetry.")
+    add_bullet_p(doc, "Observability Architecture Clarification: ", "In the local demonstration environment, the Prometheus and Grafana observability stack runs via Docker Compose on ports 9090 and 3000, scraping the containerized API on port 8000. For Kubernetes cluster environments, the identical metrics endpoint is scraped via the pod annotations (prometheus.io/scrape: 'true', prometheus.io/port: '8000') declared in k8s/deployment.yaml.")
 
     add_figure_if_exists(doc,
         "screenshots/14_grafana_dashboard.png",
@@ -881,12 +906,14 @@ def build_full_report():
     # =============================================================
     add_heading_with_spacing(doc, "11. Architecture, deliverables and repository", level=1)
 
+    add_heading_with_spacing(doc, "11.1 System Architecture", level=2)
     add_figure_if_exists(doc,
         "docs/architecture.png",
         "Fig 23. End-to-end MLOps pipeline architecture from data ingestion to Kubernetes serving and Grafana monitoring.",
         width=Inches(6.4))
 
-    # Deliverables Checklist Table
+    add_heading_with_spacing(doc, "11.2 Deliverables Checklist", level=2)
+    add_table_caption(doc, "Table 9: Final Project Deliverables Checklist")
     t_deliv = doc.add_table(rows=10, cols=2)
     t_deliv.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_deliv)
@@ -904,7 +931,7 @@ def build_full_report():
         ("Kubernetes manifests", "k8s/deployment.yaml, k8s/service.yaml, k8s/hpa.yaml, k8s/ingress.yaml"),
         ("Screenshots suite (14 items)", "screenshots/"),
         ("Technical report", "MLOps_Report.docx, docs/MLOps_Report.docx"),
-        ("Access instructions & Video outline", "README.md, Section 2 & Appendix B")
+        ("Access instructions & Video outline", "README.md, Section 2 & Section 11.3 (Video Demonstration)")
     ]
     for r_idx, (comp, loc) in enumerate(deliv_data, start=1):
         row = t_deliv.rows[r_idx]
@@ -914,6 +941,7 @@ def build_full_report():
 
     add_p(doc, "https://github.com/Mohana1507/heart-disease-mlops", bold_prefix="GitHub Repository: ")
 
+    add_heading_with_spacing(doc, "11.3 Pipeline Demonstration Video", level=2)
     # Highlighted Video Submission Callout Box
     add_callout_box(doc, "PIPELINE DEMONSTRATION VIDEO ACCESS & SUBMISSION LINK", [
         "Video URL: [PASTE_YOUR_VIDEO_LINK_HERE: e.g., https://youtu.be/xxxx or Google Drive link]",
@@ -929,11 +957,11 @@ def build_full_report():
         "  - 3:45 - 4:30 : Real-time Prometheus & Grafana dashboard under active synthetic load test."
     ], border_color="0066CC", bg_color="EBF3FB")
 
+    add_heading_with_spacing(doc, "11.4 Limitations and Future Work", level=2)
     add_p(doc,
-        "Limitations and Next Steps: The Cleveland benchmark reflects a modest sample size (N=303). "
+        "The Cleveland benchmark reflects a modest sample size (N=303). "
         "Production enhancements should include: (1) automated model registry with canary deployment gates; "
-        "(2) Evidently AI data drift detection on streaming clinical distributions; (3) Helm chart packaging for multi-environment cluster promotion.",
-        bold_prefix="Limitations and Future Work: ")
+        "(2) Evidently AI data drift detection on streaming clinical distributions; (3) Helm chart packaging for multi-environment cluster promotion.")
 
     # Save to target locations
     out_root = Path("MLOps_Report.docx")
