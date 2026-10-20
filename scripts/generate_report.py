@@ -936,7 +936,7 @@ def build_full_report():
     add_heading_with_spacing(doc, "11.3 Pipeline Demonstration Video", level=2)
     # Highlighted Video Submission Callout Box
     add_callout_box(doc, "PIPELINE DEMONSTRATION VIDEO ACCESS & SUBMISSION LINK", [
-        "Video URL: [PASTE_YOUR_VIDEO_LINK_HERE: e.g., https://youtu.be/xxxx or Google Drive link]",
+        "Video URL: https://drive.google.com/file/d/11EkvSywubYU3LCXoxk_MPjpDLAT_R3ok/view?usp=sharing",
         "",
         "Access Permissions: Set to 'Unlisted' on YouTube or 'Anyone with the link can view' on Google Drive.",
         "Demonstration Duration: Approximately 4 minutes 30 seconds.",

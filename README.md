@@ -1,5 +1,11 @@
 # Heart Disease Risk Prediction - End-to-End MLOps Project
 
+**Student:** Mohanapriya M  
+**BITS Student ID:** 2025AE05482  
+**Course:** AIMLCZG523 - Machine Learning Operations (MLOps) - Assignment 1  
+**GitHub Repository:** https://github.com/Mohana1507/heart-disease-mlops  
+**Pipeline Video Walkthrough:** https://drive.google.com/file/d/11EkvSywubYU3LCXoxk_MPjpDLAT_R3ok/view?usp=sharing  
+
 Predicts the presence of heart disease from 13 clinical features (UCI Cleveland data) and serves the
 model as a containerised, monitored FastAPI service deployable to Kubernetes.
 
@@ -102,11 +108,3 @@ docs/           architecture.png, report
 screenshots/    evidence for the report (checklist inside)
 ```
 
-## References
-- Detrano R. et al. (1989). International application of a new probability algorithm for the diagnosis of
-  coronary artery disease. *American Journal of Cardiology*, 64(5), 304-310.
-- Janosi A., Steinbrunn W., Pfisterer M., Detrano R. Heart Disease [Dataset]. UCI Machine Learning Repository.
-- Pedregosa F. et al. (2011). Scikit-learn: Machine learning in Python. *JMLR*, 12, 2825-2830.
-- Zaharia M. et al. (2018). Accelerating the machine learning lifecycle with MLflow. *IEEE Data Eng. Bull.*, 41(4), 39-45.
-
-*Educational project. The model is not a medical device and must not be used for clinical decisions.*

@@ -10,3 +10,4 @@ mlartifacts/
 .ipynb_checkpoints/
 *.egg-info/
 reports/junit.xml
+~$*.docx
