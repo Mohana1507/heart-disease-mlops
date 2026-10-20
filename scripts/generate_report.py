@@ -251,14 +251,6 @@ def build_full_report():
     sec.left_margin = Inches(0.7)
     sec.right_margin = Inches(0.7)
 
-    # Configure Header
-    header = sec.header
-    p_hdr = header.paragraphs[0]
-    p_hdr.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    r_hdr = p_hdr.add_run("Mohanapriya M · 2025AE05482 · AIMLCZG523 MLOps Assignment 01")
-    r_hdr.font.size = Pt(8.5)
-    r_hdr.font.color.rgb = RGBColor(120, 120, 120)
-
     # Base Font
     style_normal = doc.styles["Normal"]
     style_normal.font.name = "Calibri"
