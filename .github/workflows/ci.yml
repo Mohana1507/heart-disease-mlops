@@ -1,0 +1,94 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install flake8==7.1.1
+      - name: Lint
+        run: flake8 src tests scripts
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Unit tests
+        run: |
+          mkdir -p reports
+          pytest --junitxml=reports/junit.xml --cov=src/heart \
+                 --cov-report=xml --cov-report=term-missing
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            reports/junit.xml
+            coverage.xml
+
+  train:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Download and clean data
+        run: python scripts/download_data.py
+      - name: EDA figures
+        run: python -m heart.eda
+      - name: Train and track with MLflow
+        run: python -m heart.train
+      - uses: actions/upload-artifact@v4
+        with:
+          name: model
+          path: models/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mlruns
+          path: mlruns/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: figures
+          path: reports/figures/
+
+  docker:
+    needs: train
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: model
+          path: models/
+      - name: Build image
+        run: docker build -t heart-disease-api:ci .
+      - name: Run container and smoke-test /predict
+        run: |
+          docker run -d --name api -p 8000:8000 heart-disease-api:ci
+          bash scripts/smoke_test.sh http://localhost:8000
+      - name: Container logs
+        if: always()
+        run: docker logs api
