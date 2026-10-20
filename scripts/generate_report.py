@@ -183,6 +183,24 @@ def add_bullet_p(doc, bold_prefix, text):
     return p
 
 
+def add_figure_if_exists(doc, img_path_str, caption, width=Inches(6.0)):
+    p = Path(img_path_str)
+    if p.exists():
+        p_img = doc.add_paragraph()
+        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_img.paragraph_format.space_before = Pt(6)
+        p_img.paragraph_format.space_after = Pt(2)
+        p_img.add_run().add_picture(str(p), width=width)
+        p_cap = doc.add_paragraph()
+        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap.paragraph_format.space_before = Pt(0)
+        p_cap.paragraph_format.space_after = Pt(8)
+        r_cap = p_cap.add_run(caption)
+        r_cap.font.size = Pt(8.5)
+        r_cap.font.italic = True
+        r_cap.font.color.rgb = RGBColor(80, 80, 80)
+
+
 def build_full_report():
     doc = docx.Document()
 
@@ -710,6 +728,13 @@ def build_full_report():
         "  - Run 4 [ID: a66d0cca]: final_model_selection | tag: production-candidate | champion: logistic_regression"
     ])
 
+    add_figure_if_exists(doc, "screenshots/03_mlflow_runs.png",
+        "Figure 7: MLflow Tracking Server — Experiment 'heart-disease-risk' runs table with candidate comparison.", width=Inches(6.2))
+    add_figure_if_exists(doc, "screenshots/04_mlflow_run_detail.png",
+        "Figure 8: MLflow run detail for champion Logistic Regression showing logged parameters and cross-validation metrics.", width=Inches(6.2))
+    add_figure_if_exists(doc, "screenshots/04b_mlflow_artifacts.png",
+        "Figure 9: MLflow Artifacts browser displaying packaged scikit-learn model, requirements, and confusion matrix plot.", width=Inches(5.8))
+
     # -------------------------------------------------------------
     # 6. Model Packaging and Reproducibility
     # -------------------------------------------------------------
@@ -795,6 +820,9 @@ def build_full_report():
         "============================== 21 passed in 25.18s =============================="
     ])
 
+    add_figure_if_exists(doc, "screenshots/05_pytest_pass.png",
+        "Figure 10: Local execution of 21 pytest unit tests with 100% pass rate across API, data sanitization, features, and modeling.", width=Inches(6.2))
+
     add_heading_with_spacing(doc, "7.2 Multi-Stage GitHub Actions CI/CD Pipeline", level=2)
     add_p(doc,
         "Continuous Integration and Continuous Deployment (CI/CD) is automated via GitHub Actions (.github/workflows/ci.yml). "
@@ -821,6 +849,13 @@ def build_full_report():
         "  - mlruns (complete MLflow experiment tracking database)",
         "  - figures (reports/figures/*.png)"
     ])
+
+    add_figure_if_exists(doc, "screenshots/06_actions_run.png",
+        "Figure 11: GitHub Actions CI/CD workflow run — All four jobs (lint, test, train, docker) completed green.", width=Inches(6.2))
+    add_figure_if_exists(doc, "screenshots/07_actions_artifacts.png",
+        "Figure 12: GitHub Actions uploaded build artifacts (figures, mlruns, model, test-reports).", width=Inches(6.0))
+    add_figure_if_exists(doc, "screenshots/08_actions_failure.png",
+        "Figure 13: CI/CD fail-fast demonstration verifying that code quality violations intentionally halt the pipeline.", width=Inches(6.0))
 
     # -------------------------------------------------------------
     # 8. Model Containerization
@@ -891,6 +926,11 @@ def build_full_report():
         "}"
     ])
 
+    add_figure_if_exists(doc, "screenshots/09_docker_build.png",
+        "Figure 14: Terminal output of multi-stage Docker build producing non-root production container image (162 MB).", width=Inches(6.2))
+    add_figure_if_exists(doc, "screenshots/10_docker_predict.png",
+        "Figure 15: Docker container serving FastAPI microservice and returning real-time inference prediction with health status.", width=Inches(6.2))
+
     # -------------------------------------------------------------
     # 9. Production Deployment and Kubernetes Orchestration
     # -------------------------------------------------------------
@@ -929,6 +969,11 @@ def build_full_report():
         "# Endpoint Verification:",
         "curl http://localhost/health -> {\"status\":\"ok\",\"model_loaded\":true}"
     ])
+
+    add_figure_if_exists(doc, "screenshots/11_k8s_pods_svc.png",
+        "Figure 16: Kubernetes cluster resources — Replicated pods, LoadBalancer Service, and Horizontal Pod Autoscaler.", width=Inches(6.2))
+    add_figure_if_exists(doc, "screenshots/12_k8s_predict.png",
+        "Figure 17: HTTP inference request routed through Kubernetes ingress/service returning JSON prediction payload.", width=Inches(6.2))
 
     # -------------------------------------------------------------
     # 10. Monitoring and Logging
@@ -973,6 +1018,11 @@ def build_full_report():
         "predictions_total{label=\"disease\"} 112.0",
         "api_request_latency_seconds_bucket{le=\"0.005\",path=\"/predict\"} 289.0"
     ])
+
+    add_figure_if_exists(doc, "screenshots/13_api_logs.png",
+        "Figure 18: Production container logs exhibiting structured JSON telemetry without raw patient PII.", width=Inches(6.2))
+    add_figure_if_exists(doc, "screenshots/14_grafana_dashboard.png",
+        "Figure 19: Grafana production monitoring dashboard displaying live request rate, p95 latency, and prediction distribution.", width=Inches(6.2))
 
     # -------------------------------------------------------------
     # 11. Limitations, Governance, and Future Work
